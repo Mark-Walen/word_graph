@@ -1,0 +1,30 @@
+@import "@taroify/core/index.scss";
+@import "@taroify/icons/index.scss";
+
+/* wrapper used in both pages */
+.avatar-wrap {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f0f0;        /* ensure a neutral background — shuttle will pick this up */
+  display: inline-block;
+  /* center content if needed */
+  img, .avatar-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;        /* important to avoid stretching/look changes */
+  }
+}
+
+/* variant when large */
+.avatar-wrap.large {
+  width: 160rpx;
+  height: 160rpx;
+}
+
+/* optional debug border to inspect shuttle */
+.avatar-wrap.debug {
+  border: 2px solid magenta;
+}

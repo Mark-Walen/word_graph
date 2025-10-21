@@ -1,0 +1,86 @@
+.index {
+  height: 100vh;
+  background-image: url("@/statics/img/home_background.png");
+  background-size: auto 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #f8f9fb;
+
+  .nav-wrapper {
+    padding: 0 8px;
+    // .left {
+    //   padding-left: 16px;
+    // }
+  }
+
+  .search-box-wrapper {
+    padding: 0 16px;
+    position: relative;
+
+    .search-box-icon-wrapper {
+      position: absolute;
+      z-index: 1;
+      top: 12px;
+      left: 24px;
+    }
+  }
+
+  .ai-search-box {
+    height: 48px;
+    border-radius: 24px;
+    padding-left: 48px;
+    vertical-align: middle;
+    line-height: 48px;
+    font-size: 14px;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    row-gap: 32px;
+
+    .study-area {
+      display: flex;
+      flex-direction: row;
+      padding: 8px 16px;
+      justify-content: space-between;
+      column-gap: 16px;
+      margin-bottom: 24px;
+
+      .study-area__box {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        row-gap: 4px;
+        padding: 12px 24px;
+        border-radius: 16px;
+
+        .text {
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .number {
+          font-size: 20px;
+          color: #F4A100;
+        }
+      }
+    }
+  }
+
+  .tabbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+
+  .fury-glass {
+    background-color: rgba(254, 254, 254, 0.3);
+    backdrop-filter: blur(12px);
+    /* 阴影设计 */
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.1),   /* 主体阴影，轻微浮起感 */
+      0 8px 24px rgba(0, 0, 0, 0.08);  /* 弥散的柔和阴影 */
+  }
+}

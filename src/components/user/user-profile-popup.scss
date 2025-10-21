@@ -1,0 +1,60 @@
+.profile-page {
+  background: #fff;
+  height: 100vh;
+  border-radius: 24rpx 24rpx 0 0;
+  overflow: auto;
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32rpx;
+    border-bottom: 1px solid #eee;
+    font-weight: bold;
+
+    .close-btn {
+      font-size: 40rpx;
+      color: #888;
+    }
+  }
+
+  .content {
+    text-align: center;
+    padding: 40rpx 20rpx;
+
+    .avatar-large {
+      width: 160rpx;
+      height: 160rpx;
+      border-radius: 50%;
+    }
+
+    .name {
+      font-size: 36rpx;
+      font-weight: 600;
+      margin-top: 20rpx;
+    }
+
+    .email {
+      color: #888;
+      font-size: 28rpx;
+    }
+
+    .section {
+      margin-top: 40rpx;
+      padding: 24rpx;
+      border-radius: 16rpx;
+      border: 1px solid #eee;
+      background: #fafafa;
+
+      .section-title {
+        font-weight: 600;
+        margin-bottom: 12rpx;
+      }
+
+      .section-desc {
+        color: #666;
+        font-size: 26rpx;
+      }
+    }
+  }
+}

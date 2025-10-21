@@ -1,0 +1,26 @@
+.search-page {
+  background-color: #f8f9fb;
+  .navigation {
+    position: relative;
+    --popup-close-icon-margin: 0;
+    padding-left: 16px;
+  }
+
+  .search-box-wrapper {
+    padding: 0 16px;
+    position: relative;
+
+    .search-box-icon-wrapper {
+      position: absolute;
+      z-index: 1;
+      top: 12px;
+      left: 24px;
+    }
+  }
+
+  .ai-search-box {
+    height: 48px;
+    border-radius: 24px;
+    padding-left: 48px;
+  }
+}
