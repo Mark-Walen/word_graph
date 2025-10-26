@@ -41,6 +41,6 @@ jobs:
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           # This is the branch where the docs are deployed to
-          repository-name: Mark-Walen/mark-walen.github.io
-          branch: master
-          folder: docs/.vuepress/dist
+          repository-name: Mark-Walen/word_graph
+          branch: gh-pages
+          folder: dist
