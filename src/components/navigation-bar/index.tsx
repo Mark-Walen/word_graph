@@ -31,6 +31,9 @@ export default function NavigationBar({ children, backgroundColor = "#fff", bord
         paddingTop: `${statusBarHeight}px`,
         backgroundColor,
         borderBottom: border ? "1px solid rgba(0,0,0,0.05)" : "none",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
       }}
     >
       <View

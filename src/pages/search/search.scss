@@ -1,14 +1,21 @@
 .search-page {
   background-color: #f8f9fb;
-  .navigation {
-    position: relative;
-    --popup-close-icon-margin: 0;
-    padding-left: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  .nav-wrapper {
+    margin-bottom: 8px; // add spacing below navbar
+    .navigation {
+      position: relative;
+      --popup-close-icon-margin: 0;
+      padding-left: 16px;
+    }
   }
 
   .search-box-wrapper {
     padding: 0 16px;
     position: relative;
+    margin-bottom: 8px;
 
     .search-box-icon-wrapper {
       position: absolute;
@@ -16,11 +23,113 @@
       top: 12px;
       left: 24px;
     }
+
+    .search-clear-btn {
+      position: absolute;
+      z-index: 1;
+      top: 12px;
+      right: 24px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+    }
   }
 
   .ai-search-box {
     height: 48px;
     border-radius: 24px;
     padding-left: 48px;
+    padding-right: 48px;
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  }
+
+  .history-list {
+    padding: 8px 12px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .history-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .word-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .word {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .type {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #f3f4f6;
+  }
+
+  .meaning {
+    font-size: 13px;
+    color: #4b5563;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .star {
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+  }
+
+  .starred {
+    color: #f59e0b; // amber-500
+  }
+
+  .history-footer {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 0;
+  }
+
+  .show-more-btn,
+  .clear-btn {
+    font-size: 14px;
+    color: #2563eb;
+    background: #eef2ff;
+    padding: 8px 12px;
+    border-radius: 999px;
+  }
+
+  .no-results {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    padding: 16px;
   }
 }

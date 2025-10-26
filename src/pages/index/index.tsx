@@ -1,15 +1,15 @@
-import { View, Image, Text, ShareElement } from '@tarojs/components'
+import { View, Image, Text, ShareElement, PageContainer } from '@tarojs/components'
 import Taro, { useLoad } from '@tarojs/taro'
 import { useEffect, useState } from 'react'
-import collectorSVG from '@/statics/icon/collector.svg'
-import statisticSVG from '@/statics/icon/statistics.svg'
-// import searchSVG from '@/statics/icon/search.svg'
-import { Search } from '@taroify/icons'
-import { UserProfilePopup } from '@/components/user/'
+import collectorSVG from '@/assets/icon/collector.svg'
+import statisticSVG from '@/assets/icon/statistics.svg'
+import { Search, User } from '@taroify/icons'
+import { UserProfilePopup } from '@/pages/user'
 import './index.scss'
 import '@taroify/core/popup/index.scss'
 import NavigationBar from '@/components/navigation-bar'
 import SearchPage from '../search'
+import { Popup } from '@taroify/core'
 
 const getUserAvatar = () => {
   return 'https://img.alicdn.com/imgextra/i1/O1CN01EI93PS1xWbnJ87dXX_!!6000000006451-2-tps-150-150.png'
@@ -19,10 +19,11 @@ export default function Index () {
   const [bottomInset, setBottomInset] = useState(0)
   const [showUserProfile, setShowUserProfile] = useState(false)
   const [showSearchPage, setShowSearchPage] = useState(false)
+  const isH5 = process.env.TARO_ENV === 'h5' || Taro.getEnv?.() === 'WEB'
 
   useEffect(() => {
     const systemInfo = Taro.getSystemInfoSync()
-    const safeInset = Math.max(systemInfo.screenHeight - (systemInfo.safeArea?.bottom ?? systemInfo.screenHeight), 24)
+    const safeInset = isH5 ? 0 : Math.max(systemInfo.screenHeight - (systemInfo.safeArea?.bottom ?? systemInfo.screenHeight), 24)
     setBottomInset(safeInset)
   })
 
@@ -34,7 +35,16 @@ export default function Index () {
     <View className='index'>
       <NavigationBar>
         <View className="left">
-            <ShareElement
+            {isH5 ? (
+              <View className="avatar-wrap">
+                <Image
+                    src={getUserAvatar()}
+                    className='avatar-img'
+                    onClick={() => setShowUserProfile(true)}
+                  />
+              </View>
+            ) : (
+              <ShareElement
                 mapkey='user-avatar'
                 transform
                 duration={500}
@@ -44,14 +54,15 @@ export default function Index () {
                 shuttleOnPop="from"
                 easingFunction='cubic-bezier(0.25, 0.8, 0.25, 1)'
               >
-              <View className="avatar-wrap">
-                <Image
-                  src={getUserAvatar()}
-                  className='avatar-img'
-                  onClick={() => setShowUserProfile(true)}
-                />
-              </View>
-            </ShareElement>
+                <View className="avatar-wrap">
+                  <Image
+                    src={getUserAvatar()}
+                    className='avatar-img'
+                    onClick={() => setShowUserProfile(true)}
+                  />
+                </View>
+              </ShareElement>
+            )}
           </View>
       </NavigationBar>
 
@@ -82,10 +93,26 @@ export default function Index () {
         </View>
       </View>
 
-      <UserProfilePopup
-        show={showUserProfile}
-        onClose={() => setShowUserProfile(false)}
-      />
+      {isH5 ? (
+        <Popup
+          open={showUserProfile}
+          placement='left'
+        >
+          <UserProfilePopup onClose={() => setShowUserProfile(false)}/>
+        </Popup>
+      ): (
+        <PageContainer
+          show={showUserProfile}
+          overlay={false}
+          duration={300}
+          position='right'
+          closeOnSlideDown
+          onAfterLeave={() => setShowUserProfile(false)}
+          style={{ position: 'fixed', zIndex: 1000 }}
+        >
+          <UserProfilePopup onClose={() => setShowUserProfile(false)}/>
+        </PageContainer>
+      )}
 
       <SearchPage show={showSearchPage} onClose={() => setShowSearchPage(false)}/>
     </View>
