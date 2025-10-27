@@ -20,14 +20,11 @@ jobs:
           node-version: 18
           cache: 'pnpm'
 
-      # ✅ 正确方式：显式启用 Corepack 并激活 pnpm
-      - name: Enable pnpm via Corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-          pnpm --version
+      # ✅ 直接全局安装 pnpm（最稳、最快）
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Install Deps
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build Docs
