@@ -24,23 +24,26 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: yarn
+          cache: pnpm
 
-      - name: Install Deps
-        run: yarn install --frozen-lockfile
+      - name: Enable pnpm (Corepack) and Install Deps
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm install --frozen-lockfile
 
       - name: Build Docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
         run: |-
-          yarn run docs:build
-          > docs/.vuepress/dist/.nojekyll
+          pnpm run build:h5
+          > dist/.nojekyll
 
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           # This is the branch where the docs are deployed to
-          repository-name: Mark-Walen/word_graph
-          branch: gh-pages
-          folder: dist
+          repository-name: Mark-Walen/mark-walen.github.io
+          branch: master
+          folder: docs/.vuepress/dist
