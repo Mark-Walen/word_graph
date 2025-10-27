@@ -3,13 +3,7 @@ import './user-profile-popup.scss'
 import Taro, { useLoad } from "@tarojs/taro";
 import { ArrowRight } from "@taroify/icons";
 
-interface AccountAndSafePageProps {
-  show?: boolean
-  onClose?: () => void
-}
-
-export default function AccountAndSafePage({show, onClose}: AccountAndSafePageProps){
-
+export default function AccountAndSafePage(){
   useLoad(() => {
     Taro.setNavigationBarTitle({
       title: "账号与安全"
@@ -28,7 +22,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
             <View className="title">账号信息</View>
           </View>
           <View className="section-item-detail">
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
 
@@ -38,7 +32,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
           </View>
           <View className="section-item-detail">
             <Text>+86130****1234</Text>
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
 
@@ -48,7 +42,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
           </View>
           <View className="section-item-detail">
             <Text>john_doe@wg.com</Text>
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
       </View>
@@ -60,7 +54,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
           </View>
           <View className="section-item-detail">
             <Text>未绑定</Text>
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
 
@@ -70,7 +64,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
           </View>
           <View className="section-item-detail">
             <Text>未绑定</Text>
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
 
@@ -80,7 +74,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
           </View>
           <View className="section-item-detail">
             <Text>未绑定</Text>
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
 
@@ -90,7 +84,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
           </View>
           <View className="section-item-detail">
             <Text>未绑定</Text>
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
       </View>
@@ -101,7 +95,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
             <View className="title">登录设备管理</View>
           </View>
           <View className="section-item-detail">
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
 
@@ -110,7 +104,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
             <View className="title">账号授权管理</View>
           </View>
           <View className="section-item-detail">
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
       </View>
@@ -121,7 +115,7 @@ export default function AccountAndSafePage({show, onClose}: AccountAndSafePagePr
             <View className="title">注销账号</View>
           </View>
           <View className="section-item-detail">
-            <ArrowRight size={24} />
+            <ArrowRight size={16} />
           </View>
         </View>
       </View>

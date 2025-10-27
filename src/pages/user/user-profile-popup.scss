@@ -96,7 +96,7 @@
 }
 
 .section {
-  padding: 16rpx 24rpx;
+  padding: 8rpx 24rpx;
   border-radius: 32rpx;
   border: 1px solid #eee;
   background: #FFF;
@@ -108,13 +108,20 @@
     align-items: center;
     padding: 16rpx 0;
     border-bottom: 1px solid #eee;
-    .section-item-desc {
+    .section-item-desc,
+    .section-item-detail{
       display: flex;
       align-items: center;
+    }
+
+    .section-item-desc {
       gap: 16rpx;
       .title {
-        font-size: 28rpx;
-        font-weight: 600;
+        font-size: 32rpx;
+        line-height: 64rpx;
+      }
+      .icon-img {
+        margin-right: 6px;
       }
     }
   }
@@ -134,12 +141,12 @@
 .edit-profile {
   height: 100vh;
   text-align: center;
-  padding: 40rpx 20rpx;
+  padding: 32rpx 24rpx;
   background-color: #fafafa;
 
   display: flex;
   flex-direction: column;
-  row-gap: 48rpx;
+  row-gap: 40rpx;
 }
 
 .edit-profile {
@@ -152,7 +159,19 @@
 
       .avatar-wrap.large {
         .camera-icon-wrapper {
+          display: flex;
+          width: 40rpx;
+          height: 40rpx;
+          border-radius: 50%;
+          background-color: black;
           position: absolute;
+          text-align: center;
+
+          .icon-img {
+            margin: auto;
+            width: 32rpx;
+            height: 32rpx;
+          }
         }
       }
     }

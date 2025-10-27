@@ -45,6 +45,7 @@
   },
   "author": "",
   "dependencies": {
+    "@babel/helper-compilation-targets": "^7.27.2",
     "@babel/runtime": "^7.24.4",
     "@nutui/nutui-react-taro": "3.0.19-cpp.5",
     "@taroify/core": "^0.9.0",

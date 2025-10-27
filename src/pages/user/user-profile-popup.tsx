@@ -1,8 +1,9 @@
-import { View, Text, Image, PageContainer, ShareElement } from '@tarojs/components'
-import { ArrowLeft, ArrowRight, Star, UserCircleOutlined } from '@taroify/icons'
+import { View, Text, Image, ShareElement } from '@tarojs/components'
+import { ArrowLeft, ArrowRight, Star } from '@taroify/icons'
 import NavigationBar from '@/components/navigation-bar'
 import { useState } from 'react'
 import LockKeyIcon from '@/assets/icon/lock-key.svg'
+import UserCircleOutlined from '@/assets/icon/user-circle.svg'
 import GraduationCapIcon from '@/assets/icon/graduation-cap.svg'
 import PencilSimpleLineIcon from '@/assets/icon/pencil-simple-line.svg'
 import './user-profile-popup.scss'
@@ -168,12 +169,10 @@ export default function UserProfilePage({ show, onClose }: Props) {
           <View className="section">
             <View className="section-item">
               <View className="section-item-desc">
-                <View className="icon">
-                  <Image src={GraduationCapIcon} className="icon-img lock-key-icon" />
-                </View>
+                <Image src={GraduationCapIcon} className="icon-img lock-key-icon" />
                 <View className="title">学习设置</View>
               </View>
-              <ArrowRight size={24} />
+              <ArrowRight size={16} />
             </View>
           </View>
 
@@ -184,21 +183,17 @@ export default function UserProfilePage({ show, onClose }: Props) {
               })
             }}>
               <View className="section-item-desc">
-                <View className="icon">
-                  <UserCircleOutlined size={24} />
-                </View>
+                <Image src={UserCircleOutlined} className="icon-img user-circle-icon" />
                 <View className="title">账号与安全</View>
               </View>
-              <ArrowRight size={24} />
+              <ArrowRight size={16} />
             </View>
             <View className="section-item">
               <View className="section-item-desc">
-                <View className="icon">
-                  <Image src={LockKeyIcon} className="icon-img lock-key-icon" />
-                </View>
+                <Image src={LockKeyIcon} className="icon-img lock-key-icon" />
                 <View className="title">隐私设置</View>
               </View>
-              <ArrowRight size={24} />
+              <ArrowRight size={16} />
             </View>
           </View>
 
