@@ -29,6 +29,8 @@ jobs:
 
       - name: Build Docs
         env:
+          NODE_ENV: production
+          BROWSERSLIST_ENV: production
           NODE_OPTIONS: --max_old_space_size=8192
         run: |
           pnpm run build:h5
