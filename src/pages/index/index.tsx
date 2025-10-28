@@ -32,7 +32,7 @@ export default function Index () {
   })
 
   return (
-    <View className='index'>
+    <View className='index page-bg-image'>
       <NavigationBar>
         <View className="left">
             {isH5 ? (
@@ -76,7 +76,11 @@ export default function Index () {
       <View className="content-wrapper">
         <View className="content">
           <View className="study-area">
-            <View className="learn study-area__box fury-glass">
+            <View className="learn study-area__box fury-glass" onClick={() => {
+              Taro.navigateTo({
+                url: '/pages/learn/index'
+              })
+            }}>
               <Text className="text">今日学习</Text>
               <Text className="number">4000</Text>
             </View>

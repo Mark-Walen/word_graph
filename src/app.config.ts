@@ -3,7 +3,9 @@ export default defineAppConfig({
     'pages/index/index',
     'pages/word-detail/index',
     'pages/user/account-safe',
-    'pages/user/edit-profile'
+    'pages/user/edit-profile',
+
+    'pages/learn/index'
   ],
   window: {
     backgroundTextStyle: 'light',

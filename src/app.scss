@@ -1,6 +1,40 @@
 @import "@taroify/core/index.scss";
 @import "@taroify/icons/index.scss";
 
+.page-bg-image {
+  position: relative;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.page-bg-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("@/assets/img/home_background.png");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: auto 100%;
+  z-index: 0;
+}
+
+.glass-bg::before {
+  filter: blur(10px);
+  transform: scale(1.1);
+}
+
+.fury-glass {
+  background-color: rgba(254, 254, 254, 0.3);
+  backdrop-filter: blur(12px);
+  /* 阴影设计 */
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.1),   /* 主体阴影，轻微浮起感 */
+    0 8px 24px rgba(0, 0, 0, 0.08);  /* 弥散的柔和阴影 */
+}
+
 /* wrapper used in both pages */
 .avatar-wrap {
   width: 64rpx;
