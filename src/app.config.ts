@@ -5,7 +5,9 @@ export default defineAppConfig({
     'pages/user/account-safe',
     'pages/user/edit-profile',
 
-    'pages/learn/index'
+    'pages/learn/index',
+    'pages/ec-heatmap/index',
+    'pages/relation/index'
   ],
   window: {
     backgroundTextStyle: 'light',
