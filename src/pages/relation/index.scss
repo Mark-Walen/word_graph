@@ -1,0 +1,33 @@
+.relation-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fb;
+
+  .header {
+    padding: 12px 16px 8px;
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+    .subtitle {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+
+  .canvas-holder {
+    flex: 1;
+    margin: 8px 12px 12px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+
+    .relation-graph {
+      height: calc(100vh - 60px);
+    }
+  }
+}
+
