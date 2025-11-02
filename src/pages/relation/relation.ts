@@ -147,9 +147,9 @@ export const getRelationColor = (relationType: string): string => {
   } else if (RELATION_GROUPS.formal.includes(relationType)) {
       return "#2196F3"; // 蓝色
   } else if (RELATION_GROUPS.morphological.includes(relationType)) {
-      return "#FF9800"; // 橙色
-  } else if (RELATION_GROUPS.associative.includes(relationType)) {
       return "#9C27B0"; // 紫色
+  } else if (RELATION_GROUPS.associative.includes(relationType)) {
+      return "#FF9800"; // 橙色
   }
   return "#607D8B"; // 默认灰色
 }

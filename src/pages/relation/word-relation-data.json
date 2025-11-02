@@ -1,0 +1,127 @@
+{
+    "happy": {
+        "word": "happy",
+        "phonetic": "/ˈhæpi/",
+        "partOfSpeech": "形容词",
+        "level": "A1",
+        "definition": "感到或表现出愉悦或满足的；幸运的或适当的。",
+        "examples": [
+            "I'm happy to see you.",
+            "They lived a happy life together."
+        ],
+        "relations": [
+            { "word": "joyful", "type": "synonym", "strength": 0.9 },
+            { "word": "sad", "type": "antonym", "strength": 0.9 },
+            { "word": "happiness", "type": "to_noun", "strength": 0.8 },
+            { "word": "happily", "type": "to_adv", "strength": 0.7 },
+            { "word": "happier", "type": "comparative", "strength": 0.9 },
+            { "word": "happiest", "type": "superlative", "strength": 0.9 },
+            { "word": "glad", "type": "synonym", "strength": 0.7 },
+            { "word": "pleased", "type": "synonym", "strength": 0.6 },
+            { "word": "content", "type": "related", "strength": 0.5 }
+        ]
+    },
+    "joyful": {
+        "word": "joyful",
+        "phonetic": "/ˈdʒɔɪfl/",
+        "partOfSpeech": "形容词",
+        "level": "B1",
+        "definition": "充满欢乐的；令人高兴的。",
+        "examples": [
+            "The news brought a joyful smile to her face.",
+            "We spent a joyful evening together."
+        ],
+        "relations": [
+            { "word": "happy", "type": "synonym", "strength": 0.9 },
+            { "word": "ecstatic", "type": "synonym", "strength": 0.7 },
+            { "word": "sad", "type": "antonym", "strength": 0.9 },
+            { "word": "delighted", "type": "synonym", "strength": 0.6 },
+            { "word": "joy", "type": "to_noun", "strength": 0.8 }
+        ]
+    },
+    "sad": {
+        "word": "sad",
+        "phonetic": "/sæd/",
+        "partOfSpeech": "形容词",
+        "level": "A1",
+        "definition": "感到或表现出不快乐或悲伤的。",
+        "examples": [
+            "She felt sad after hearing the bad news.",
+            "It's a sad story with an unhappy ending."
+        ],
+        "relations": [
+            { "word": "happy", "type": "antonym", "strength": 0.9 },
+            { "word": "joyful", "type": "antonym", "strength": 0.9 },
+            { "word": "unhappy", "type": "synonym", "strength": 0.8 },
+            { "word": "depressed", "type": "synonym", "strength": 0.7 },
+            { "word": "sadness", "type": "to_noun", "strength": 0.8 },
+            { "word": "sadder", "type": "comparative", "strength": 0.9 },
+            { "word": "saddest", "type": "superlative", "strength": 0.9 }
+        ]
+    },
+    "happiness": {
+        "word": "happiness",
+        "phonetic": "/ˈhæpinəs/",
+        "partOfSpeech": "名词",
+        "level": "A2",
+        "definition": "快乐，幸福。",
+        "examples": [
+            "Money can't buy happiness.",
+            "She found happiness in helping others."
+        ],
+        "relations": [
+            { "word": "happy", "type": "to_noun", "strength": 0.8 },
+            { "word": "joy", "type": "synonym", "strength": 0.7 },
+            { "word": "sadness", "type": "antonym", "strength": 0.9 }
+        ]
+    },
+    "happily": {
+        "word": "happily",
+        "phonetic": "/ˈhæpɪli/",
+        "partOfSpeech": "副词",
+        "level": "A2",
+        "definition": "快乐地，幸福地。",
+        "examples": [
+            "They lived happily ever after.",
+            "She smiled happily at the good news."
+        ],
+        "relations": [
+            { "word": "happy", "type": "to_adv", "strength": 0.8 },
+            { "word": "joyfully", "type": "synonym", "strength": 0.6 }
+        ]
+    },
+    "run": {
+        "word": "run",
+        "phonetic": "/rʌn/",
+        "partOfSpeech": "动词",
+        "level": "A1",
+        "definition": "跑，运行，经营。",
+        "examples": [
+            "He can run very fast.",
+            "The program runs on Windows."
+        ],
+        "relations": [
+            { "word": "running", "type": "present_participle", "strength": 0.9 },
+            { "word": "ran", "type": "past_tense", "strength": 0.9 },
+            { "word": "runner", "type": "to_noun", "strength": 0.7 },
+            { "word": "jog", "type": "synonym", "strength": 0.6 },
+            { "word": "walk", "type": "antonym", "strength": 0.8 },
+            { "word": "operate", "type": "synonym", "strength": 0.5 }
+        ]
+    },
+    "running": {
+        "word": "running",
+        "phonetic": "/ˈrʌnɪŋ/",
+        "partOfSpeech": "名词/形容词",
+        "level": "A2",
+        "definition": "跑步，运行中的。",
+        "examples": [
+            "Running is good for your health.",
+            "The running water is cold."
+        ],
+        "relations": [
+            { "word": "run", "type": "present_participle", "strength": 0.9 },
+            { "word": "jogging", "type": "synonym", "strength": 0.7 }
+        ]
+    }
+}
