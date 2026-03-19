@@ -6,7 +6,6 @@ export default defineAppConfig({
     'pages/user/edit-profile',
 
     'pages/learn/index',
-    'pages/ec-heatmap/index',
     'pages/relation/index'
   ],
   window: {

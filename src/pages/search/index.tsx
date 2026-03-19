@@ -120,7 +120,6 @@ export default function SearchPage({show, onClose}: SearchProps) {
       Taro.navigateTo({ url: `/pages/word-detail/index?word=${encodeURIComponent(value)}` })
     } else {
       Taro.navigateTo({ url: `/pages/relation/index?word=${encodeURIComponent(value)}&mode=${queryMode}` })
-      // Taro.navigateTo({url: '/pages/relation_v2/index'})
     }
   }, [query, queryMode])
 
@@ -249,7 +248,6 @@ export default function SearchPage({show, onClose}: SearchProps) {
           </View>
         </View>
       </View>
-
     </Popup>
   )
 }

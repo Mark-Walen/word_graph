@@ -5,7 +5,6 @@
   background: #f8f9fb;
 
   .header {
-    padding: 12px 16px 8px;
     .title {
       font-size: 16px;
       font-weight: 600;
@@ -16,6 +15,37 @@
       font-size: 12px;
       color: #6b7280;
     }
+    .pickers {
+      padding: 12px 16px 8px;
+      display: inline-flex; /* inline flex as requested */
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+
+      .picker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #111827;
+        font-size: 13px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+      }
+
+      .picker:hover {
+        background: #eef2ff;
+      }
+
+      .picker.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+      }
+    }
   }
 
   .canvas-holder {
@@ -24,10 +54,87 @@
     border-radius: 12px;
     background: #ffffff;
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    position: relative;
 
     .relation-graph {
-      height: calc(100vh - 60px);
+      width: 100%;
+      height: calc(100vh - 70px - env(safe-area-inset-bottom));
+    }
+  }
+
+  .context-menu {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: 30;
+    min-width: 144px;
+    padding: 4px 0;
+
+    .context-menu-item {
+      padding: 8px 16px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .word-detail-panel {
+    .word-detail-header {
+      padding: 0 32rpx;
+      
+      .word-detail__title {
+        font-size: 40rpx;
+        font-weight: bold;
+        color: #323232;
+      }
+      .word-detail__phonetic {
+        font-size: 28rpx;
+        color: #5a5a5c;
+        padding: 0 16rpx;
+      }
+      .star {
+        font-size: 14px;
+      }
+    }
+
+    .word-detail-panel__tabs {
+      --tabs-wrap-height: 88rpx;
+      --tab-active-font-weight: bold;
+      --tab-font-size: 40rpx;
+      --tabs-line-height: 8rpx;
+      --padding-sm: 32rpx;
+
+      .taroify-tabs__wrap {
+        margin-bottom: 24rpx;
+      }
+
+      .word-info {
+        .part-of-speech {
+          display: inline-block;
+          background: #e0e0e0;
+          padding: 4rpx 16rpx;
+          border-radius: 8rpx;
+          font-size: 12px;
+          margin-right: 12rpx;
+        }
+      }
+
+      .word-definition-content .definition {
+        margin-top: 8rpx;
+        line-height: 1.5;
+      }
+    }
+
+    .relation-content-pannel__tabs {
+      --cell-vertical-padding: 24rpx;
+      --cell-horizontal-padding: 32rpx;
+      overflow: hidden;
+      --cell-font-size: 40rpx;
+      --cell-line-height: 80rpx;
+      // --cell-color: #555;
+      --collapse-item-content-padding: 32rpx;
+      --padding-md: 32rpx;
     }
   }
 }
-

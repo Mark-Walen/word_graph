@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词关系图谱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .search-box {
+            display: flex;
+            margin-top: 15px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-box button {
+            padding: 12px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #45a049;
+        }
+
+        .control-panel {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .filter-group select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .graph-container {
+            position: relative;
+            height: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #wordGraph {
+            width: 100%;
+            height: 100%;
+            background: #f9f9f9;
+            cursor: grab;
+        }
+
+        #wordGraph:active {
+            cursor: grabbing;
+        }
+
+        .detail-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            z-index: 10;
+            display: none;
+            transition: all 0.3s ease;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: move;
+            user-select: none;
+        }
+
+        .word-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .phonetic {
+            color: #666;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .word-info {
+            margin-bottom: 10px;
+        }
+
+        .part-of-speech {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .definition {
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        .relation-detail {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            z-index: 20;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .relation-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .relation-example {
+            font-style: italic;
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .context-menu {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            z-index: 30;
+            display: none;
+            min-width: 150px;
+            padding: 5px 0;
+        }
+
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .context-menu-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #667eea;
+            font-size: 18px;
+            z-index: 5;
+        }
+
+        .expanded-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 16px;
+            height: 16px;
+            background: #ff9800;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .favorite-star {
+            color: gold;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .panel-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .panel-tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .panel-content {
+            display: none;
+        }
+
+        .panel-content.active {
+            display: block;
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            z-index: 5;
+            max-width: 200px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        .relation-strength {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .relation-group {
+            margin-bottom: 15px;
+        }
+
+        .relation-group-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>单词关系图谱</h1>
+            <div class="search-box">
+                <input type="text" id="wordInput" placeholder="输入单词，如：happy">
+                <button id="searchBtn">查询</button>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="filter-group">
+                <label>关系类型筛选:</label>
+                <select id="relationFilter">
+                    <option value="all">全部关系</option>
+                    <option value="semantic">语义关系</option>
+                    <option value="formal">形式关系</option>
+                    <option value="morphological">形态关系</option>
+                    <option value="associative">联想与用法关系</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>显示模式:</label>
+                <select id="displayMode">
+                    <option value="all">显示所有关系</option>
+                    <option value="semantic">仅语义关系</option>
+                    <option value="morphological">仅形态关系</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="graph-container">
+            <canvas id="wordGraph"></canvas>
+            <div class="loading" id="loadingIndicator">加载中...</div>
+
+            <div class="legend" id="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #10b981;"></div>
+                    <span>语义关系</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3b82f6;"></div>
+                    <span>形式关系</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #8b5cf6;"></div>
+                    <span>形态关系</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f59e0b;"></div>
+                    <span>联想与用法关系</span>
+                </div>
+            </div>
+
+            <div class="detail-panel" id="wordDetail">
+                <div class="detail-header" id="wordDetailHeader">
+                    <div>
+                        <span class="word-title" id="detailWord">happy</span>
+                        <span class="phonetic" id="detailPhonetic">/ˈhæpi/</span>
+                        <span class="favorite-star" id="favoriteStar">☆</span>
+                    </div>
+                    <button class="close-btn" id="closeDetail">×</button>
+                </div>
+                <div class="panel-tabs">
+                    <div class="panel-tab active" data-tab="definition">释义</div>
+                    <div class="panel-tab" data-tab="relations">关系</div>
+                    <div class="panel-tab" data-tab="examples">例句</div>
+                </div>
+                <div class="panel-content active" id="definitionContent">
+                    <div class="word-info">
+                        <span class="part-of-speech" id="detailPOS">形容词</span>
+                        <span class="level" id="detailLevel">A1</span>
+                    </div>
+                    <div class="definition" id="detailDefinition">
+                        感到或表现出愉悦或满足的；幸运的或适当的。
+                    </div>
+                </div>
+                <div class="panel-content" id="relationsContent">
+                    <div id="relationList">
+                        <!-- 关系列表将在这里动态生成 -->
+                    </div>
+                </div>
+                <div class="panel-content" id="examplesContent">
+                    <div class="examples" id="detailExamples">
+                        <p>例句：I'm happy to see you.</p>
+                        <p>例句：They lived a happy life together.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relation-detail" id="relationDetail">
+                <div class="detail-header" id="relationDetailHeader">
+                    <div class="relation-title" id="relationType">同义词关系</div>
+                    <button class="close-btn" id="closeRelationDetail">×</button>
+                </div>
+                <div id="relationWords">happy ↔ joyful</div>
+                <div class="relation-example" id="relationExample">
+                    例如：I'm happy/joyful to be here.
+                </div>
+                <div class="relation-strength" id="relationStrength">
+                    关系强度: 0.9
+                </div>
+            </div>
+
+            <div class="context-menu" id="contextMenu">
+                <div class="context-menu-item" id="viewDetails">
+                    <i>📖</i> 查看详情
+                </div>
+                <div class="context-menu-item" id="addToFavorites">
+                    <i>⭐</i> 加入收藏
+                </div>
+                <div class="context-menu-item" id="expandRelations">
+                    <i>🔍</i> 扩展关系
+                </div>
+                <div class="context-menu-item" id="removeFromGraph">
+                    <i>🗑️</i> 从图中移除
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 关系类型定义
+        const RELATION_TYPES = {
+            // ==================== 语义关系 (基于含义) ====================
+            SYNONYM: "synonym",           // 同义词
+            ANTONYM: "antonym",           // 反义词
+            HYPERNYM: "hypernym",         // 上位词/父类词
+            HYPONYM: "hyponym",           // 下位词/子类词
+            HOLONYM: "holonym",           // 整体词
+            MERONYM: "meronym",           // 部分词
+            SISTER_TERM: "sister_term",   // 同位词/兄弟概念
+
+            // ==================== 形式关系 (基于拼写、发音、构词法) ====================
+            HOMOPHONE: "homophone",       // 同音异形异义词
+            HOMONYM: "homonym",           // 同形异义词
+            PARONYM: "paronym",           // 近音词
+            SIMILAR: "similar",           // 拼写相似词
+            DERIVATION: "derivation",     // 派生关系
+            ABBREVIATION: "abbreviation", // 缩写/简写关系
+            VARIANT: "variant",           // 变体形式
+
+            // ==================== 形态关系 (基于单词的语法形态变化) ====================
+            BASE_FORM: "base_form",               // 基础形式(原形)
+            THIRD_PERSON: "third_person",         // 第三人称单数现在时
+            PAST_TENSE: "past_tense",             // 过去式
+            PAST_PARTICIPLE: "past_participle",   // 过去分词
+            PRESENT_PARTICIPLE: "present_participle", // 现在分词/动名词
+            PLURAL_FORM: "plural_form",           // 复数形式
+            POSSESSIVE: "possessive",             // 所有格形式
+            COMPARATIVE: "comparative",           // 比较级
+            SUPERLATIVE: "superlative",           // 最高级
+            TO_NOUN: "to_noun",     // 转换为名词
+            TO_VERB: "to_verb",     // 转换为动词
+            TO_ADJ: "to_adj",       // 转换为形容词
+            TO_ADV: "to_adv",       // 转换为副词
+
+            // ==================== 联想与用法关系 (基于经验、语境和自定义) ====================
+            COLLOCATION: "collocation",           // 固定搭配
+            COMPOUND: "compound",                 // 复合词关系(如"car door")
+            PHRASE_COMPOSITION: "phrase_composition", // 短语构成关系
+            MODIFIER_HEAD: "modifier_head",       // 修饰语-中心语关系
+            VERB_OBJECT: "verb_object",           // 动宾关系
+            SUBJECT_PREDICATE: "subject_predicate", // 主谓关系
+            RELATED: "related",                   // 相关词(宽泛语境关联)
+            IDIOM_COMPONENT: "idiom_component",   // 习语构成成分
+            SEMANTIC_ROLE: "semantic_role",       // 语义角色关系
+            CONTEXTUAL: "contextual",             // 上下文关联关系
+            CUSTOM: "custom"                     // 自定义关系
+        };
+
+        // 关系类型分组
+        const RELATION_GROUPS = {
+            semantic: [
+                RELATION_TYPES.SYNONYM,
+                RELATION_TYPES.ANTONYM,
+                RELATION_TYPES.HYPERNYM,
+                RELATION_TYPES.HYPONYM,
+                RELATION_TYPES.HOLONYM,
+                RELATION_TYPES.MERONYM,
+                RELATION_TYPES.SISTER_TERM
+            ],
+            formal: [
+                RELATION_TYPES.HOMOPHONE,
+                RELATION_TYPES.HOMONYM,
+                RELATION_TYPES.PARONYM,
+                RELATION_TYPES.SIMILAR,
+                RELATION_TYPES.DERIVATION,
+                RELATION_TYPES.ABBREVIATION,
+                RELATION_TYPES.VARIANT
+            ],
+            morphological: [
+                RELATION_TYPES.BASE_FORM,
+                RELATION_TYPES.THIRD_PERSON,
+                RELATION_TYPES.PAST_TENSE,
+                RELATION_TYPES.PAST_PARTICIPLE,
+                RELATION_TYPES.PRESENT_PARTICIPLE,
+                RELATION_TYPES.PLURAL_FORM,
+                RELATION_TYPES.POSSESSIVE,
+                RELATION_TYPES.COMPARATIVE,
+                RELATION_TYPES.SUPERLATIVE,
+                RELATION_TYPES.TO_NOUN,
+                RELATION_TYPES.TO_VERB,
+                RELATION_TYPES.TO_ADJ,
+                RELATION_TYPES.TO_ADV
+            ],
+            associative: [
+                RELATION_TYPES.COLLOCATION,
+                RELATION_TYPES.COMPOUND,
+                RELATION_TYPES.PHRASE_COMPOSITION,
+                RELATION_TYPES.MODIFIER_HEAD,
+                RELATION_TYPES.VERB_OBJECT,
+                RELATION_TYPES.SUBJECT_PREDICATE,
+                RELATION_TYPES.RELATED,
+                RELATION_TYPES.IDIOM_COMPONENT,
+                RELATION_TYPES.SEMANTIC_ROLE,
+                RELATION_TYPES.CONTEXTUAL,
+                RELATION_TYPES.CUSTOM
+            ]
+        };
+
+        // 关系类型中文标签
+        const RELATION_LABELS = {
+            [RELATION_TYPES.SYNONYM]: "同义词",
+            [RELATION_TYPES.ANTONYM]: "反义词",
+            [RELATION_TYPES.HYPERNYM]: "上位词",
+            [RELATION_TYPES.HYPONYM]: "下位词",
+            [RELATION_TYPES.HOLONYM]: "整体词",
+            [RELATION_TYPES.MERONYM]: "部分词",
+            [RELATION_TYPES.SISTER_TERM]: "同位词",
+
+            [RELATION_TYPES.HOMOPHONE]: "同音词",
+            [RELATION_TYPES.HOMONYM]: "同形词",
+            [RELATION_TYPES.PARONYM]: "近音词",
+            [RELATION_TYPES.SIMILAR]: "拼写相似",
+            [RELATION_TYPES.DERIVATION]: "派生词",
+            [RELATION_TYPES.ABBREVIATION]: "缩写",
+            [RELATION_TYPES.VARIANT]: "变体形式",
+
+            [RELATION_TYPES.BASE_FORM]: "原形",
+            [RELATION_TYPES.THIRD_PERSON]: "第三人称",
+            [RELATION_TYPES.PAST_TENSE]: "过去式",
+            [RELATION_TYPES.PAST_PARTICIPLE]: "过去分词",
+            [RELATION_TYPES.PRESENT_PARTICIPLE]: "现在分词",
+            [RELATION_TYPES.PLURAL_FORM]: "复数形式",
+            [RELATION_TYPES.POSSESSIVE]: "所有格",
+            [RELATION_TYPES.COMPARATIVE]: "比较级",
+            [RELATION_TYPES.SUPERLATIVE]: "最高级",
+            [RELATION_TYPES.TO_NOUN]: "名词化",
+            [RELATION_TYPES.TO_VERB]: "动词化",
+            [RELATION_TYPES.TO_ADJ]: "形容词化",
+            [RELATION_TYPES.TO_ADV]: "副词化",
+
+            [RELATION_TYPES.COLLOCATION]: "固定搭配",
+            [RELATION_TYPES.COMPOUND]: "复合词",
+            [RELATION_TYPES.PHRASE_COMPOSITION]: "短语构成",
+            [RELATION_TYPES.MODIFIER_HEAD]: "修饰关系",
+            [RELATION_TYPES.VERB_OBJECT]: "动宾关系",
+            [RELATION_TYPES.SUBJECT_PREDICATE]: "主谓关系",
+            [RELATION_TYPES.RELATED]: "相关词",
+            [RELATION_TYPES.IDIOM_COMPONENT]: "习语成分",
+            [RELATION_TYPES.SEMANTIC_ROLE]: "语义角色",
+            [RELATION_TYPES.CONTEXTUAL]: "上下文关联",
+            [RELATION_TYPES.CUSTOM]: "自定义关系"
+        };
+
+        // 单词数据示例
+        const wordData = {
+            "happy": {
+                word: "happy",
+                phonetic: "/ˈhæpi/",
+                partOfSpeech: "形容词",
+                level: "A1",
+                definition: "感到或表现出愉悦或满足的；幸运的或适当的。",
+                examples: [
+                    "I'm happy to see you.",
+                    "They lived a happy life together."
+                ],
+                relations: [
+                    { word: "joyful", type: RELATION_TYPES.SYNONYM, strength: 0.9 },
+                    { word: "sad", type: RELATION_TYPES.ANTONYM, strength: 0.9 },
+                    { word: "happiness", type: RELATION_TYPES.TO_NOUN, strength: 0.8 },
+                    { word: "happily", type: RELATION_TYPES.TO_ADV, strength: 0.7 },
+                    { word: "happier", type: RELATION_TYPES.COMPARATIVE, strength: 0.9 },
+                    { word: "happiest", type: RELATION_TYPES.SUPERLATIVE, strength: 0.9 },
+                    { word: "glad", type: RELATION_TYPES.SYNONYM, strength: 0.7 },
+                    { word: "pleased", type: RELATION_TYPES.SYNONYM, strength: 0.6 },
+                    { word: "content", type: RELATION_TYPES.RELATED, strength: 0.5 }
+                ]
+            },
+            "joyful": {
+                word: "joyful",
+                phonetic: "/ˈdʒɔɪfl/",
+                partOfSpeech: "形容词",
+                level: "B1",
+                definition: "充满欢乐的；令人高兴的。",
+                examples: [
+                    "The news brought a joyful smile to her face.",
+                    "We spent a joyful evening together."
+                ],
+                relations: [
+                    { word: "happy", type: RELATION_TYPES.SYNONYM, strength: 0.9 },
+                    { word: "ecstatic", type: RELATION_TYPES.SYNONYM, strength: 0.7 },
+                    { word: "sad", type: RELATION_TYPES.ANTONYM, strength: 0.9 },
+                    { word: "delighted", type: RELATION_TYPES.SYNONYM, strength: 0.6 },
+                    { word: "joy", type: RELATION_TYPES.TO_NOUN, strength: 0.8 }
+                ]
+            },
+            "sad": {
+                word: "sad",
+                phonetic: "/sæd/",
+                partOfSpeech: "形容词",
+                level: "A1",
+                definition: "感到或表现出不快乐或悲伤的。",
+                examples: [
+                    "She felt sad after hearing the bad news.",
+                    "It's a sad story with an unhappy ending."
+                ],
+                relations: [
+                    { word: "happy", type: RELATION_TYPES.ANTONYM, strength: 0.9 },
+                    { word: "joyful", type: RELATION_TYPES.ANTONYM, strength: 0.9 },
+                    { word: "unhappy", type: RELATION_TYPES.SYNONYM, strength: 0.8 },
+                    { word: "depressed", type: RELATION_TYPES.SYNONYM, strength: 0.7 },
+                    { word: "sadness", type: RELATION_TYPES.TO_NOUN, strength: 0.8 },
+                    { word: "sadder", type: RELATION_TYPES.COMPARATIVE, strength: 0.9 },
+                    { word: "saddest", type: RELATION_TYPES.SUPERLATIVE, strength: 0.9 }
+                ]
+            },
+            "happiness": {
+                word: "happiness",
+                phonetic: "/ˈhæpinəs/",
+                partOfSpeech: "名词",
+                level: "A2",
+                definition: "快乐，幸福。",
+                examples: [
+                    "Money can't buy happiness.",
+                    "She found happiness in helping others."
+                ],
+                relations: [
+                    { word: "happy", type: RELATION_TYPES.TO_NOUN, strength: 0.8 },
+                    { word: "joy", type: RELATION_TYPES.SYNONYM, strength: 0.7 },
+                    { word: "sadness", type: RELATION_TYPES.ANTONYM, strength: 0.9 }
+                ]
+            },
+            "happily": {
+                word: "happily",
+                phonetic: "/ˈhæpɪli/",
+                partOfSpeech: "副词",
+                level: "A2",
+                definition: "快乐地，幸福地。",
+                examples: [
+                    "They lived happily ever after.",
+                    "She smiled happily at the good news."
+                ],
+                relations: [
+                    { word: "happy", type: RELATION_TYPES.TO_ADV, strength: 0.8 },
+                    { word: "joyfully", type: RELATION_TYPES.SYNONYM, strength: 0.6 }
+                ]
+            },
+            "run": {
+                word: "run",
+                phonetic: "/rʌn/",
+                partOfSpeech: "动词",
+                level: "A1",
+                definition: "跑，运行，经营。",
+                examples: [
+                    "He can run very fast.",
+                    "The program runs on Windows."
+                ],
+                relations: [
+                    { word: "running", type: RELATION_TYPES.PRESENT_PARTICIPLE, strength: 0.9 },
+                    { word: "ran", type: RELATION_TYPES.PAST_TENSE, strength: 0.9 },
+                    { word: "runner", type: RELATION_TYPES.TO_NOUN, strength: 0.7 },
+                    { word: "jog", type: RELATION_TYPES.SYNONYM, strength: 0.6 },
+                    { word: "walk", type: RELATION_TYPES.ANTONYM, strength: 0.8 },
+                    { word: "operate", type: RELATION_TYPES.SYNONYM, strength: 0.5 }
+                ]
+            },
+            "running": {
+                word: "running",
+                phonetic: "/ˈrʌnɪŋ/",
+                partOfSpeech: "名词/形容词",
+                level: "A2",
+                definition: "跑步，运行中的。",
+                examples: [
+                    "Running is good for your health.",
+                    "The running water is cold."
+                ],
+                relations: [
+                    { word: "run", type: RELATION_TYPES.PRESENT_PARTICIPLE, strength: 0.9 },
+                    { word: "jogging", type: RELATION_TYPES.SYNONYM, strength: 0.7 }
+                ]
+            }
+        };
+
+        // 用户数据
+        let userData = {
+            favorites: new Set(),
+            customRelations: {},
+            visibleRelations: new Set(Object.values(RELATION_TYPES)) // 默认显示所有关系
+        };
+
+        // 初始化Canvas和上下文
+        const canvas = document.getElementById('wordGraph');
+        const ctx = canvas.getContext('2d');
+
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 词图状态
+        let graphState = {
+            nodes: [],
+            edges: [],
+            selectedNode: null,
+            selectedEdge: null,
+            hoverNode: null,
+            hoverEdge: null,
+            dragging: false,
+            dragNode: null,
+            dragStartX: 0,
+            dragStartY: 0,
+            transform: {
+                x: 0,
+                y: 0,
+                scale: 1
+            },
+            animationId: null,
+            forceLayoutRunning: false,
+            expandedNodes: new Set(),
+            expandedEdges: new Map(),
+            detailPanelDragging: false,
+            relationPanelDragging: false,
+            longPressTriggered: false,
+            originalPanelPositions: {
+                wordDetail: { bottom: '20px', left: '50%', transform: 'translateX(-50%)' },
+                relationDetail: { bottom: '20px', left: '50%', transform: 'translateX(-50%)' }
+            }
+        };
+
+        // 根据关系类型获取颜色
+        function getRelationColor(type) {
+            // 按关系组分配颜色
+            if (RELATION_GROUPS.semantic.includes(type)) {
+                return '#10b981'; // 绿色 - 语义关系
+            } else if (RELATION_GROUPS.formal.includes(type)) {
+                return '#3b82f6'; // 蓝色 - 形式关系
+            } else if (RELATION_GROUPS.morphological.includes(type)) {
+                return '#8b5cf6'; // 紫色 - 形态关系
+            } else if (RELATION_GROUPS.associative.includes(type)) {
+                return '#f59e0b'; // 橙色 - 联想与用法关系
+            }
+            return '#6b7280'; // 默认灰色
+        }
+
+        // 获取关系所属的组
+        function getRelationGroup(type) {
+            for (const [group, types] of Object.entries(RELATION_GROUPS)) {
+                if (types.includes(type)) {
+                    return group;
+                }
+            }
+            return 'other';
+        }
+
+        function getRelationLabel(type) {
+        // 获取关系类型的中文标签
+            return RELATION_LABELS[type] || type;
+        }
+
+        // 初始化词图
+        function initGraph(centerWord) {
+            if (!wordData[centerWord]) {
+                alert('未找到该单词的数据');
+                return;
+            }
+
+            // 显示加载指示器
+            document.getElementById('loadingIndicator').style.display = 'block';
+
+            // 清空现有数据
+            graphState.nodes = [];
+            graphState.edges = [];
+            graphState.expandedNodes.clear();
+            graphState.expandedEdges.clear();
+
+            // 添加中心节点
+            const centerNode = {
+                id: centerWord,
+                word: centerWord,
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                radius: 30,
+                color: '#667eea',
+                vx: 0,
+                vy: 0,
+                expanded: false,
+                isCenter: true
+            };
+            graphState.nodes.push(centerNode);
+
+            // 添加相关节点和边
+            const centerWordData = wordData[centerWord];
+            centerWordData.relations.forEach((relation, index) => {
+                // 检查关系类型是否在可见列表中
+                if (!userData.visibleRelations.has(relation.type)) {
+                    return;
+                }
+
+                if (wordData[relation.word]) {
+                    // 计算相关节点的位置（圆形分布）
+                    const angle = (index / centerWordData.relations.length) * 2 * Math.PI;
+                    const distance = 150;
+
+                    const relatedNode = {
+                        id: relation.word,
+                        word: relation.word,
+                        x: centerNode.x + Math.cos(angle) * distance,
+                        y: centerNode.y + Math.sin(angle) * distance,
+                        radius: 25,
+                        color: getRelationColor(relation.type),
+                        vx: 0,
+                        vy: 0,
+                        expanded: false,
+                        isCenter: false
+                    };
+                    graphState.nodes.push(relatedNode);
+
+                    // 添加边
+                    graphState.edges.push({
+                        source: centerNode,
+                        target: relatedNode,
+                        type: relation.type,
+                        strength: relation.strength,
+                        original: true
+                    });
+                }
+            });
+
+            // 隐藏加载指示器
+            document.getElementById('loadingIndicator').style.display = 'none';
+
+            // 开始力导向布局
+            startForceLayout();
+
+            // 绘制词图
+            drawGraph();
+        }
+
+        // 力导向布局
+        function startForceLayout() {
+          if (graphState.forceLayoutRunning) {
+              cancelAnimationFrame(graphState.animationId);
+          }
+
+          graphState.forceLayoutRunning = true;
+          simulateForceLayout();
+        }
+
+        function simulateForceLayout() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const repulsionStrength = 10000;
+            const attractionStrength = 0.1;
+            const edgeLength = 150;
+
+            // 节点间排斥力
+            for (let i = 0; i < graphState.nodes.length; i++) {
+                for (let j = i + 1; j < graphState.nodes.length; j++) {
+                    const nodeA = graphState.nodes[i];
+                    const nodeB = graphState.nodes[j];
+
+                    const dx = nodeA.x - nodeB.x;
+                    const dy = nodeA.y - nodeB.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance > 0) {
+                        const force = repulsionStrength / (distance * distance);
+                        nodeA.vx += force * dx / distance;
+                        nodeA.vy += force * dy / distance;
+                        nodeB.vx -= force * dx / distance;
+                        nodeB.vy -= force * dy / distance;
+                    }
+                }
+            }
+
+            // 边的吸引力
+            graphState.edges.forEach(edge => {
+                const dx = edge.target.x - edge.source.x;
+                const dy = edge.target.y - edge.source.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 0) {
+                    const force = attractionStrength * (distance - edgeLength);
+                    edge.source.vx += force * dx / distance;
+                    edge.source.vy += force * dy / distance;
+                    edge.target.vx -= force * dx / distance;
+                    edge.target.vy -= force * dy / distance;
+                }
+            });
+
+            // 向中心点的吸引力
+            graphState.nodes.forEach(node => {
+                const dx = centerX - node.x;
+                const dy = centerY - node.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 0) {
+                    const force = 0.01 * distance;
+                    node.vx += force * dx / distance;
+                    node.vy += force * dy / distance;
+                }
+            });
+
+            // 应用速度并限制边界
+            graphState.nodes.forEach(node => {
+                // 限制最大速度
+                const speed = Math.sqrt(node.vx * node.vx + node.vy * node.vy);
+                if (speed > 10) {
+                    node.vx = (node.vx / speed) * 10;
+                    node.vy = (node.vy / speed) * 10;
+                }
+
+                node.x += node.vx;
+                node.y += node.vy;
+
+                // 限制在Canvas范围内
+                node.x = Math.max(node.radius, Math.min(canvas.width - node.radius, node.x));
+                node.y = Math.max(node.radius, Math.min(canvas.height - node.radius, node.y));
+
+                // 速度衰减
+                node.vx *= 0.6;
+                node.vy *= 0.6;
+            });
+
+            // 绘制词图
+            drawGraph();
+
+            // 检查是否继续动画
+            let totalEnergy = 0;
+            graphState.nodes.forEach(node => {
+                totalEnergy += Math.abs(node.vx) + Math.abs(node.vy);
+            });
+
+            if (totalEnergy > 0.1) {
+                graphState.animationId = requestAnimationFrame(simulateForceLayout);
+            } else {
+                graphState.forceLayoutRunning = false;
+            }
+        }
+
+        // 绘制词图
+        function drawGraph() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制边
+            graphState.edges.forEach(edge => {
+                // 检查关系类型是否在可见列表中
+                if (!userData.visibleRelations.has(edge.type)) {
+                    return;
+                }
+                drawEdge(edge);
+            });
+
+            // 绘制节点
+            graphState.nodes.forEach(node => {
+                drawNode(node);
+            });
+        }
+
+        // 绘制节点
+        function drawNode(node) {
+            // 节点外圈
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            ctx.fillStyle = node.color;
+            ctx.fill();
+
+            // 节点内圈（白色）
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius - 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+
+            // 节点文字
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 处理长单词显示
+            const maxWidth = node.radius * 1.8;
+            let displayText = node.word;
+
+            // 测量单词长度
+            const textWidth = ctx.measureText(displayText).width;
+
+            // 如果单词太长，尝试分割成两行
+            if (textWidth > maxWidth) {
+                // 尝试找到合适的分割点
+                const midPoint = Math.floor(displayText.length / 2);
+                let splitIndex = midPoint;
+
+                // 向前找空格或连字符作为分割点
+                for (let i = midPoint; i < displayText.length; i++) {
+                    if (displayText[i] === '-' || displayText[i] === ' ') {
+                        splitIndex = i + 1;
+                        break;
+                    }
+                }
+
+                // 如果没找到合适的分割点，向后找
+                if (splitIndex === midPoint) {
+                    for (let i = midPoint; i >= 0; i--) {
+                        if (displayText[i] === '-' || displayText[i] === ' ') {
+                            splitIndex = i + 1;
+                            break;
+                        }
+                    }
+                }
+
+                // 分割单词
+                const firstLine = displayText.substring(0, splitIndex);
+                const secondLine = displayText.substring(splitIndex);
+
+                // 检查分割后是否还需要省略号
+                const firstLineWidth = ctx.measureText(firstLine).width;
+                const secondLineWidth = ctx.measureText(secondLine).width;
+
+                if (firstLineWidth > maxWidth || secondLineWidth > maxWidth) {
+                    // 如果分割后仍然太长，使用省略号
+                    while (ctx.measureText(displayText + '...').width > maxWidth && displayText.length > 1) {
+                        displayText = displayText.substring(0, displayText.length - 1);
+                    }
+                    displayText += '...';
+
+                    // 绘制单行文本
+                    ctx.fillText(displayText, node.x, node.y);
+                } else {
+                    // 绘制两行文本
+                    ctx.fillText(firstLine, node.x, node.y - 8);
+                    ctx.fillText(secondLine, node.x, node.y + 8);
+                }
+            } else {
+                // 单词不长，直接绘制
+                ctx.fillText(displayText, node.x, node.y);
+            }
+
+            // 选中状态高亮
+            if (graphState.selectedNode === node || graphState.hoverNode === node) {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius + 3, 0, Math.PI * 2);
+                ctx.strokeStyle = '#ff9800';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // 如果节点已展开，绘制展开指示器
+            if (node.expanded) {
+                ctx.beginPath();
+                ctx.arc(node.x + node.radius - 5, node.y - node.radius + 5, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff9800';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(node.x + node.radius - 5, node.y - node.radius + 5, 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+            }
+
+            // 如果是收藏单词，绘制星星
+            if (userData.favorites.has(node.word)) {
+                ctx.fillStyle = 'gold';
+                ctx.font = '12px Arial';
+                ctx.fillText('★', node.x - node.radius + 5, node.y - node.radius + 5);
+            }
+        }
+
+        // 绘制边
+        function drawEdge(edge) {
+            const source = edge.source;
+            const target = edge.target;
+
+            // 计算边的方向
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const unitX = dx / distance;
+            const unitY = dy / distance;
+
+            // 边的起点和终点（从节点边缘开始）
+            const startX = source.x + unitX * source.radius;
+            const startY = source.y + unitY * source.radius;
+            const endX = target.x - unitX * target.radius;
+            const endY = target.y - unitY * target.radius;
+
+            // 绘制边线
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = getRelationColor(edge.type);
+            ctx.lineWidth = 2 + edge.strength * 3;
+            ctx.stroke();
+
+            // 绘制箭头
+            const arrowSize = 8;
+            const arrowX = endX - unitX * arrowSize;
+            const arrowY = endY - unitY * arrowSize;
+
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - arrowSize * unitX - arrowSize * unitY,
+                       arrowY - arrowSize * unitY + arrowSize * unitX);
+            ctx.lineTo(arrowX - arrowSize * unitX + arrowSize * unitY,
+                       arrowY - arrowSize * unitY - arrowSize * unitX);
+            ctx.closePath();
+            ctx.fillStyle = getRelationColor(edge.type);
+            ctx.fill();
+
+            // 绘制关系类型标签
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+
+            ctx.fillStyle = getRelationColor(edge.type);
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(getRelationLabel(edge.type), midX, midY - 15);
+
+            // 选中状态高亮
+            if (graphState.selectedEdge === edge || graphState.hoverEdge === edge) {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = '#ff9800';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+        }
+
+        // 查找节点（根据坐标）
+        function findNodeAt(x, y) {
+            for (let i = graphState.nodes.length - 1; i >= 0; i--) {
+                const node = graphState.nodes[i];
+                const dx = x - node.x;
+                const dy = y - node.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= node.radius) {
+                    return node;
+                }
+            }
+            return null;
+        }
+
+        // 查找边（根据坐标）
+        function findEdgeAt(x, y) {
+            for (let i = 0; i < graphState.edges.length; i++) {
+                const edge = graphState.edges[i];
+                const source = edge.source;
+                const target = edge.target;
+
+                // 计算点到线段的距离
+                const A = x - source.x;
+                const B = y - source.y;
+                const C = target.x - source.x;
+                const D = target.y - source.y;
+
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                let param = -1;
+
+                if (lenSq !== 0) {
+                    param = dot / lenSq;
+                }
+
+                let xx, yy;
+
+                if (param < 0) {
+                    xx = source.x;
+                    yy = source.y;
+                } else if (param > 1) {
+                    xx = target.x;
+                    yy = target.y;
+                } else {
+                    xx = source.x + param * C;
+                    yy = source.y + param * D;
+                }
+
+                const dx = x - xx;
+                const dy = y - yy;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 8) { // 边的点击容差
+                    return edge;
+                }
+            }
+            return null;
+        }
+
+        // 显示单词详情
+        function showWordDetail(node) {
+            const wordInfo = wordData[node.word];
+            if (!wordInfo) return;
+
+            document.getElementById('detailWord').textContent = wordInfo.word;
+            document.getElementById('detailPhonetic').textContent = wordInfo.phonetic;
+            document.getElementById('detailPOS').textContent = wordInfo.partOfSpeech;
+            document.getElementById('detailLevel').textContent = wordInfo.level;
+            document.getElementById('detailDefinition').textContent = wordInfo.definition;
+
+            // 更新收藏状态
+            const favoriteStar = document.getElementById('favoriteStar');
+            if (userData.favorites.has(node.word)) {
+                favoriteStar.textContent = '★';
+                favoriteStar.style.color = 'gold';
+            } else {
+                favoriteStar.textContent = '☆';
+                favoriteStar.style.color = '#ccc';
+            }
+
+            // 更新例句
+            const examplesElement = document.getElementById('detailExamples');
+            examplesElement.innerHTML = '';
+            wordInfo.examples.forEach(example => {
+                const p = document.createElement('p');
+                p.textContent = `例句：${example}`;
+                examplesElement.appendChild(p);
+            });
+
+            // 更新关系列表
+            const relationList = document.getElementById('relationList');
+            relationList.innerHTML = '';
+
+            // 按关系组分类显示
+            const groupedRelations = {};
+            wordInfo.relations.forEach(relation => {
+                const group = getRelationGroup(relation.type);
+                if (!groupedRelations[group]) {
+                    groupedRelations[group] = [];
+                }
+                groupedRelations[group].push(relation);
+            });
+
+            // 为每个关系组创建显示区域
+            Object.keys(RELATION_GROUPS).forEach(group => {
+                if (groupedRelations[group] && groupedRelations[group].length > 0) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'relation-group';
+
+                    const groupTitle = document.createElement('div');
+                    groupTitle.className = 'relation-group-title';
+
+                    // 设置组标题
+                    switch(group) {
+                        case 'semantic':
+                            groupTitle.textContent = '语义关系';
+                            break;
+                        case 'formal':
+                            groupTitle.textContent = '形式关系';
+                            break;
+                        case 'morphological':
+                            groupTitle.textContent = '形态关系';
+                            break;
+                        case 'associative':
+                            groupTitle.textContent = '联想与用法关系';
+                            break;
+                        default:
+                            groupTitle.textContent = '其他关系';
+                    }
+
+                    groupDiv.appendChild(groupTitle);
+
+                    groupedRelations[group].forEach(relation => {
+                        const div = document.createElement('div');
+                        div.style.marginBottom = '8px';
+                        div.style.padding = '5px';
+                        div.style.borderLeft = `3px solid ${getRelationColor(relation.type)}`;
+                        div.style.backgroundColor = '#f9f9f9';
+
+                        const relationText = document.createElement('div');
+                        relationText.textContent = `${getRelationLabel(relation.type)}: ${relation.word}`;
+
+                        const strengthText = document.createElement('div');
+                        strengthText.textContent = `关系强度: ${relation.strength}`;
+                        strengthText.style.fontSize = '12px';
+                        strengthText.style.color = '#666';
+
+                        div.appendChild(relationText);
+                        div.appendChild(strengthText);
+                        groupDiv.appendChild(div);
+                    });
+
+                    relationList.appendChild(groupDiv);
+                }
+            });
+
+            document.getElementById('wordDetail').style.display = 'block';
+        }
+
+        // 隐藏单词详情
+        function hideWordDetail() {
+            document.getElementById('wordDetail').style.display = 'none';
+            graphState.selectedNode = null;
+            drawGraph();
+        }
+
+        // 显示关系详情
+        function showRelationDetail(edge) {
+            document.getElementById('relationType').textContent = getRelationLabel(edge.type);
+            document.getElementById('relationWords').textContent = `${edge.source.word} ↔ ${edge.target.word}`;
+            document.getElementById('relationExample').textContent = `例如：I'm ${edge.source.word}/${edge.target.word} to be here.`;
+            document.getElementById('relationStrength').textContent = `关系强度: ${edge.strength}`;
+
+            document.getElementById('relationDetail').style.display = 'block';
+        }
+
+        // 隐藏关系详情
+        function hideRelationDetail() {
+            document.getElementById('relationDetail').style.display = 'none';
+            graphState.selectedEdge = null;
+            drawGraph();
+        }
+
+        // 显示上下文菜单
+        function showContextMenu(x, y, node, edge) {
+            const contextMenu = document.getElementById('contextMenu');
+
+            // 设置菜单位置在点击目标附近
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+            contextMenu.style.display = 'block';
+
+            // 更新菜单项行为
+            const viewDetailsBtn = document.getElementById('viewDetails');
+            const addToFavoritesBtn = document.getElementById('addToFavorites');
+            const expandRelationsBtn = document.getElementById('expandRelations');
+            const removeFromGraphBtn = document.getElementById('removeFromGraph');
+
+            if (node) {
+                viewDetailsBtn.onclick = () => {
+                    showWordDetail(node);
+                    hideContextMenu();
+                };
+
+                if (userData.favorites.has(node.word)) {
+                    addToFavoritesBtn.innerHTML = '<i>⭐</i> 取消收藏';
+                    addToFavoritesBtn.onclick = () => {
+                        removeFromFavorites(node.word);
+                        hideContextMenu();
+                    };
+                } else {
+                    addToFavoritesBtn.innerHTML = '<i>⭐</i> 加入收藏';
+                    addToFavoritesBtn.onclick = () => {
+                        addToFavorites(node.word);
+                        hideContextMenu();
+                    };
+                }
+
+                // 如果是中心词，不能移除
+                if (node.isCenter) {
+                    removeFromGraphBtn.style.display = 'none';
+                } else {
+                    removeFromGraphBtn.style.display = 'block';
+                    removeFromGraphBtn.onclick = () => {
+                        removeNodeFromGraph(node);
+                        hideContextMenu();
+                    };
+                }
+
+                expandRelationsBtn.onclick = () => {
+                    expandNode(node);
+                    hideContextMenu();
+                };
+
+                // 显示所有菜单项
+                viewDetailsBtn.style.display = 'block';
+                addToFavoritesBtn.style.display = 'block';
+                expandRelationsBtn.style.display = 'block';
+            } else if (edge) {
+                viewDetailsBtn.onclick = () => {
+                    showRelationDetail(edge);
+                    hideContextMenu();
+                };
+
+                addToFavoritesBtn.style.display = 'none';
+                expandRelationsBtn.style.display = 'none';
+                removeFromGraphBtn.onclick = () => {
+                    removeEdgeFromGraph(edge);
+                    hideContextMenu();
+                };
+
+                // 只显示查看详情和移除选项
+                viewDetailsBtn.style.display = 'block';
+                removeFromGraphBtn.style.display = 'block';
+            }
+        }
+
+        // 隐藏上下文菜单
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        // 添加收藏
+        function addToFavorites(word) {
+            userData.favorites.add(word);
+            drawGraph();
+        }
+
+        // 取消收藏
+        function removeFromFavorites(word) {
+            userData.favorites.delete(word);
+            drawGraph();
+        }
+
+        // 从图中移除节点
+        function removeNodeFromGraph(node) {
+            // 移除与该节点相关的所有边
+            graphState.edges = graphState.edges.filter(edge =>
+                edge.source !== node && edge.target !== node
+            );
+
+            // 移除节点
+            graphState.nodes = graphState.nodes.filter(n => n !== node);
+
+            // 如果节点是展开状态，需要递归移除所有扩展的节点和边
+            if (node.expanded) {
+                collapseNode(node);
+            }
+
+            // 重新开始力导向布局
+            startForceLayout();
+        }
+
+        // 从图中移除边
+        function removeEdgeFromGraph(edge) {
+            graphState.edges = graphState.edges.filter(e => e !== edge);
+            drawGraph();
+        }
+
+        // 扩展节点
+        function expandNode(node) {
+            if (!wordData[node.word] || node.expanded) return;
+
+            const wordInfo = wordData[node.word];
+
+            // 添加新节点和边
+            const addedEdges = [];
+            wordInfo.relations.forEach(relation => {
+                // 检查关系类型是否在可见列表中
+                if (!userData.visibleRelations.has(relation.type)) {
+                    return;
+                }
+
+                // 检查节点是否已存在
+                const existingNode = graphState.nodes.find(n => n.id === relation.word);
+                if (!existingNode && wordData[relation.word]) {
+                    // 添加新节点
+                    const angle = Math.random() * 2 * Math.PI;
+                    const distance = 150 + Math.random() * 50;
+
+                    const newNode = {
+                        id: relation.word,
+                        word: relation.word,
+                        x: node.x + Math.cos(angle) * distance,
+                        y: node.y + Math.sin(angle) * distance,
+                        radius: 25,
+                        color: getRelationColor(relation.type),
+                        vx: 0,
+                        vy: 0,
+                        expanded: false,
+                        isCenter: false
+                    };
+                    graphState.nodes.push(newNode);
+
+                    // 添加边
+                    const newEdge = {
+                        source: node,
+                        target: newNode,
+                        type: relation.type,
+                        strength: relation.strength,
+                        original: true
+                    };
+                    graphState.edges.push(newEdge);
+                    addedEdges.push(newEdge);
+                }
+            });
+
+            // 记录扩展的边
+            graphState.expandedEdges.set(node.id, addedEdges);
+            node.expanded = true;
+            graphState.expandedNodes.add(node.id);
+
+            // 重新开始力导向布局
+            startForceLayout();
+        }
+
+        // 收缩节点（递归收缩所有扩展的节点）
+        function collapseNode(node) {
+            if (!node.expanded) return;
+
+            // 获取该节点扩展的所有边
+            const expandedEdges = graphState.expandedEdges.get(node.id) || [];
+
+            // 找出扩展的节点（只连接到扩展边的节点）
+            const expandedNodes = new Set();
+            expandedEdges.forEach(edge => {
+                expandedNodes.add(edge.target.id);
+
+                // 递归收缩扩展的节点
+                if (edge.target.expanded) {
+                    collapseNode(edge.target);
+                }
+            });
+
+            // 移除扩展的边
+            graphState.edges = graphState.edges.filter(edge => !expandedEdges.includes(edge));
+
+            // 移除扩展的节点
+            graphState.nodes = graphState.nodes.filter(n => !expandedNodes.has(n.id));
+
+            // 更新状态
+            graphState.expandedEdges.delete(node.id);
+            graphState.expandedNodes.delete(node.id);
+            node.expanded = false;
+
+            // 重新开始力导向布局
+            startForceLayout();
+        }
+
+        // 更新可见关系类型
+        function updateVisibleRelations() {
+            const relationFilter = document.getElementById('relationFilter').value;
+            const displayMode = document.getElementById('displayMode').value;
+
+            userData.visibleRelations.clear();
+
+            if (relationFilter === 'all') {
+                // 显示所有关系类型
+                Object.values(RELATION_TYPES).forEach(type => {
+                    userData.visibleRelations.add(type);
+                });
+            } else {
+                // 显示特定组的关系
+                RELATION_GROUPS[relationFilter].forEach(type => {
+                    userData.visibleRelations.add(type);
+                });
+            }
+
+            // 应用显示模式筛选
+            if (displayMode !== 'all') {
+                const tempVisible = new Set(userData.visibleRelations);
+                userData.visibleRelations.clear();
+
+                tempVisible.forEach(type => {
+                    if (getRelationGroup(type) === displayMode) {
+                        userData.visibleRelations.add(type);
+                    }
+                });
+            }
+
+            // 重新初始化图谱
+            if (graphState.nodes.length > 0) {
+                const centerNode = graphState.nodes.find(node => node.isCenter);
+                if (centerNode) {
+                    initGraph(centerNode.word);
+                }
+            }
+        }
+
+        // 详情面板拖动功能
+        function makePanelDraggable(panel, header) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            header.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - panel.offsetLeft;
+                offsetY = e.clientY - panel.offsetTop;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const newX = e.clientX - offsetX;
+                const newY = e.clientY - offsetY;
+
+                // 限制面板在容器范围内
+                const container = document.querySelector('.graph-container');
+                const containerRect = container.getBoundingClientRect();
+                const panelRect = panel.getBoundingClientRect();
+
+                // 计算边界
+                const minX = containerRect.left;
+                const maxX = containerRect.right - panelRect.width;
+                const minY = containerRect.top;
+                const maxY = containerRect.bottom - panelRect.height;
+
+                // 应用边界限制
+                const boundedX = Math.max(minX, Math.min(newX, maxX));
+                const boundedY = Math.max(minY, Math.min(newY, maxY));
+
+                panel.style.left = `${boundedX}px`;
+                panel.style.top = `${boundedY}px`;
+                panel.style.transform = 'none';
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        // 重置面板位置
+        function resetPanelPosition(panel, originalPosition) {
+            panel.style.bottom = originalPosition.bottom;
+            panel.style.left = originalPosition.left;
+            panel.style.transform = originalPosition.transform;
+            panel.style.top = 'auto';
+        }
+
+        // 事件处理
+        let lastClickTime = 0;
+        let clickCount = 0;
+        let longPressTimer = null;
+        let isDraggingNode = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const node = findNodeAt(x, y);
+            const edge = findEdgeAt(x, y);
+
+            // 记录拖动起始位置
+            graphState.dragStartX = x;
+            graphState.dragStartY = y;
+
+            // 长按计时开始
+            longPressTimer = setTimeout(() => {
+                if (node || edge) {
+                    graphState.longPressTriggered = true;
+                    showContextMenu(e.clientX, e.clientY, node, edge);
+                }
+                longPressTimer = null;
+            }, 500);
+
+            if (node) {
+                graphState.dragging = true;
+                graphState.dragNode = node;
+                isDraggingNode = false;
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // 更新悬停状态
+            const prevHoverNode = graphState.hoverNode;
+            const prevHoverEdge = graphState.hoverEdge;
+
+            graphState.hoverNode = findNodeAt(x, y);
+            graphState.hoverEdge = findEdgeAt(x, y);
+
+            // 如果悬停状态改变，重绘图
+            if (prevHoverNode !== graphState.hoverNode ||
+                prevHoverEdge !== graphState.hoverEdge) {
+                drawGraph();
+            }
+
+            // 拖拽节点
+            if (graphState.dragging && graphState.dragNode) {
+                // 检查是否已经开始拖动（移动距离超过阈值）
+                const dx = x - graphState.dragStartX;
+                const dy = y - graphState.dragStartY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 5) {
+                    isDraggingNode = true;
+                }
+
+                graphState.dragNode.x = x;
+                graphState.dragNode.y = y;
+
+                // 停止力导向布局
+                if (graphState.forceLayoutRunning) {
+                    cancelAnimationFrame(graphState.animationId);
+                    graphState.forceLayoutRunning = false;
+                }
+
+                drawGraph();
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            // 清除长按计时器
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+
+            // 如果长按已触发，不执行单击逻辑
+            if (graphState.longPressTriggered) {
+                graphState.longPressTriggered = false;
+                graphState.dragging = false;
+                graphState.dragNode = null;
+                isDraggingNode = false;
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const node = findNodeAt(x, y);
+            const edge = findEdgeAt(x, y);
+
+            // 如果正在拖动节点，则不触发单击事件
+            if (isDraggingNode) {
+                graphState.dragging = false;
+                graphState.dragNode = null;
+                isDraggingNode = false;
+
+                // 重新开始力导向布局
+                if (!graphState.forceLayoutRunning) {
+                    startForceLayout();
+                }
+                return;
+            }
+
+            // 处理单击/双击
+            const currentTime = new Date().getTime();
+            if (currentTime - lastClickTime < 300) {
+                clickCount++;
+            } else {
+                clickCount = 1;
+            }
+            lastClickTime = currentTime;
+
+            if (clickCount === 1) {
+                // 单击处理
+                setTimeout(() => {
+                    if (clickCount === 1) {
+                        if (node) {
+                            if (graphState.selectedNode === node) {
+                                // 再次点击已选中的节点，隐藏详情
+                                hideWordDetail();
+                            } else {
+                                // 点击新节点，显示详情
+                                graphState.selectedNode = node;
+                                showWordDetail(node);
+                                hideRelationDetail();
+                                // 重置面板位置
+                                resetPanelPosition(
+                                    document.getElementById('wordDetail'),
+                                    graphState.originalPanelPositions.wordDetail
+                                );
+                            }
+                        } else if (edge) {
+                            graphState.selectedEdge = edge;
+                            showRelationDetail(edge);
+                            hideWordDetail();
+                            // 重置面板位置
+                            resetPanelPosition(
+                                document.getElementById('relationDetail'),
+                                graphState.originalPanelPositions.relationDetail
+                            );
+                        } else {
+                            // 点击空白处，隐藏所有详情
+                            hideWordDetail();
+                            hideRelationDetail();
+                        }
+                        drawGraph();
+                    }
+                }, 200);
+            } else if (clickCount === 2) {
+                // 双击处理
+                if (node) {
+                    // 双击切换节点的展开/收缩状态
+                    if (node.expanded) {
+                        collapseNode(node);
+                    } else {
+                        expandNode(node);
+                    }
+                }
+                clickCount = 0;
+            }
+
+            graphState.dragging = false;
+            graphState.dragNode = null;
+            isDraggingNode = false;
+
+            // 如果之前有拖拽，重新开始力导向布局
+            if (!graphState.forceLayoutRunning) {
+                startForceLayout();
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            graphState.dragging = false;
+            graphState.dragNode = null;
+            graphState.hoverNode = null;
+            graphState.hoverEdge = null;
+            isDraggingNode = false;
+            drawGraph();
+        });
+
+        // 面板标签切换
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+
+                // 移除所有标签的active类
+                document.querySelectorAll('.panel-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+
+                // 隐藏所有内容
+                document.querySelectorAll('.panel-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // 激活当前标签和内容
+                tab.classList.add('active');
+                document.getElementById(`${tabName}Content`).classList.add('active');
+            });
+        });
+
+        // 收藏功能
+        document.getElementById('favoriteStar').addEventListener('click', () => {
+            const word = document.getElementById('detailWord').textContent;
+            if (userData.favorites.has(word)) {
+                removeFromFavorites(word);
+                document.getElementById('favoriteStar').textContent = '☆';
+                document.getElementById('favoriteStar').style.color = '#ccc';
+            } else {
+                addToFavorites(word);
+                document.getElementById('favoriteStar').textContent = '★';
+                document.getElementById('favoriteStar').style.color = 'gold';
+            }
+        });
+
+        // 关闭详情面板
+        document.getElementById('closeDetail').addEventListener('click', hideWordDetail);
+        document.getElementById('closeRelationDetail').addEventListener('click', hideRelationDetail);
+
+        // 点击空白处隐藏关系详情和上下文菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.relation-detail') &&
+                !e.target.closest('#wordGraph') &&
+                !e.target.closest('.context-menu') &&
+                !e.target.closest('.detail-panel')) {
+                hideWordDetail();
+                hideRelationDetail();
+                hideContextMenu();
+            }
+        });
+
+        // 搜索功能
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const word = document.getElementById('wordInput').value.trim().toLowerCase();
+            if (word) {
+                initGraph(word);
+            }
+        });
+
+        document.getElementById('wordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        // 筛选器事件
+        document.getElementById('relationFilter').addEventListener('change', updateVisibleRelations);
+        document.getElementById('displayMode').addEventListener('change', updateVisibleRelations);
+
+        // 初始化显示"happy"的词图
+        window.addEventListener('load', () => {
+            initGraph('happy');
+
+            // 启用面板拖动
+            makePanelDraggable(
+                document.getElementById('wordDetail'),
+                document.getElementById('wordDetailHeader')
+            );
+
+            makePanelDraggable(
+                document.getElementById('relationDetail'),
+                document.getElementById('relationDetailHeader')
+            );
+        });
+    </script>
+</body>
+</html>

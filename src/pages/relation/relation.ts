@@ -96,6 +96,14 @@ export const RELATION_GROUPS = {
   ]
 };
 
+export const RELATION_GROUP_LABELS: Record<string, string> = {
+  semantic: '语义关系',
+  formal: '形式关系',
+  morphological: '形态关系',
+  associative: '联想与用法关系',
+  other: '其他关系',
+};
+
 // 关系类型中文标签
 export const RELATION_LABELS = {
   [RELATION_TYPES.SYNONYM]: "同义词",
@@ -142,6 +150,8 @@ export const RELATION_LABELS = {
 };
 
 export const getRelationColor = (relationType: string): string => {
+  console.log(relationType);
+  
   if (RELATION_GROUPS.semantic.includes(relationType)) {
       return "#4CAF50"; // 绿色
   } else if (RELATION_GROUPS.formal.includes(relationType)) {
@@ -154,13 +164,17 @@ export const getRelationColor = (relationType: string): string => {
   return "#607D8B"; // 默认灰色
 }
 
-export const getRelationGroup = (relationType: string): string | null => {
+export const getRelationGroup = (relationType: string): string => {
   for (const [group, types] of Object.entries(RELATION_GROUPS)) {
     if (types.includes(relationType)) {
       return group;
     }
   }
-  return null;
+  return '';
+}
+
+export const getRelationGroupLabel = (relationGroup: string): string => {
+  return RELATION_GROUP_LABELS[relationGroup] ?? '其他关系'
 }
 
 export const getRelationLabel = (relationType: string): string => {
