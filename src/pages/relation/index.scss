@@ -82,7 +82,7 @@
   .word-detail-panel {
     .word-detail-header {
       padding: 0 32rpx;
-      
+
       .word-detail__title {
         font-size: 40rpx;
         font-weight: bold;
@@ -120,13 +120,17 @@
         }
       }
 
-      .word-definition-content .definition {
+      .tabs-content__word_definition, .tabs-content__example {
+        padding: 0 32rpx;
+      }
+
+      .tabs-content__word_definition .definition {
         margin-top: 8rpx;
         line-height: 1.5;
       }
     }
 
-    .relation-content-pannel__tabs {
+    .tabs-content__relation {
       --cell-vertical-padding: 24rpx;
       --cell-horizontal-padding: 32rpx;
       overflow: hidden;

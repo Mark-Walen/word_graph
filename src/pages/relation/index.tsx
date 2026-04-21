@@ -15,6 +15,7 @@ import { Search, Star, StarOutlined } from "@taroify/icons";
 import SearchPage from "../search";
 import Tabs from "@taroify/core/tabs";
 import { Collapse, FloatingPanel } from "@taroify/core";
+import Button from "@taroify/core/button/button";
 
 interface RelationBase {
   word: string;
@@ -33,8 +34,11 @@ interface Node {
   radius?: number;
   expanded?: boolean;
   isCenter?: boolean;
+  isStarred?: boolean;
   color?: string;
 }
+
+type NodeNullable = Node | null
 
 interface Edge {
   source: Node,
@@ -43,6 +47,8 @@ interface Edge {
   strength: number,
   original: boolean
 }
+
+type EdgeNullable = Edge | null
 
 interface WordInfo {
   word: string;
@@ -64,11 +70,11 @@ interface RelationInfo extends RelationBase {
 interface WordRelationGraphState {
   nodes: Node[];
   edges: Edge[];
-  selectedNode: Node | null;
-  selectedEdge: Edge | null;
-  hoveredNode: Node | null;
-  hoveredEdge: Edge | null;
-  draggingNode: Node | null;
+  selectedNode: NodeNullable;
+  selectedEdge: EdgeNullable;
+  hoveredNode: NodeNullable;
+  hoveredEdge: EdgeNullable;
+  draggingNode: NodeNullable;
   draggingOffset: { x: number; y: number } | null;
   dragging: boolean;
   transform: { x: number; y: number; scale: number };
@@ -88,8 +94,8 @@ interface ContextMenuState {
   type: 'edge' | 'node' | ''
   x: number;
   y: number;
-  node: Node | null;
-  edge: Edge | null;
+  node: NodeNullable;
+  edge: EdgeNullable;
 }
 
 interface RelationPageState {
@@ -104,7 +110,8 @@ interface RelationPageState {
   selectedEdgeInfo: RelationInfo,
   showWordDetail: boolean,
   showRelationDetail: boolean,
-  expanded: string[]
+  expanded: string[],
+  groupedRelations: {}
 }
 
 export default class RelationPage extends Component {
@@ -148,11 +155,16 @@ export default class RelationPage extends Component {
 
   windowHeight = Taro.getWindowInfo().windowHeight;
 
-  anchors = [
-    200,
-    Math.round(0.4 * this.windowHeight),
-    Math.round(0.7 * this.windowHeight),
+  word_anchors = [
+    0,
+    Math.round(0.3 * this.windowHeight),
+    Math.round(0.8 * this.windowHeight),
   ];
+
+  relation_anchors = [
+    0,
+    Math.round(0.3 * this.windowHeight),
+  ]
 
   relations = {
     all: "全部关系",
@@ -181,6 +193,7 @@ export default class RelationPage extends Component {
       node: null,
       edge: null,
     },
+    groupedRelations: {},
     selectedNodeInfo: {
       word: "",
       phonetic: "",
@@ -754,27 +767,15 @@ export default class RelationPage extends Component {
     }
   };
 
-  showContextMenu = (x, y, node: Node, edge: Edge) => {
+  showContextMenu = (x, y, node: NodeNullable, edge: EdgeNullable) => {
     let contextMenuType = ''
     if (node) {
       contextMenuType = 'node'
-      const wordInfo = this._wordData[node.label]
-      if(wordInfo) this.setState({
-        selectedNodeInfo: {
-          ...wordInfo,
-          isCenter: node.isCenter,
-          starred: this.userData.starredWords.has(node.label)
-        }
-      })
+      node.isStarred = this.userData.starredWords.has(node.label)
+      this.graphState.selectedNode = node
     } else if (edge) {
       contextMenuType = 'edge'
-      this.state.selectedEdgeInfo = {
-        type: relation.getRelationLabel(edge.type),
-        word: edge.source.label,
-        targetWord: edge.target.label,
-        examples: [],
-        strength: edge.strength
-      }
+      this.graphState.selectedEdge = edge
     }
 
     this.setState({
@@ -782,7 +783,9 @@ export default class RelationPage extends Component {
         x: x,
         y: y,
         show: true,
-        type: contextMenuType
+        type: contextMenuType,
+        node: node,
+        edge: edge,
       },
     });
   };
@@ -912,31 +915,12 @@ export default class RelationPage extends Component {
             this.hideWordDetail()
           } else {
             this.graphState.selectedNode = node;
-            const wordInfo = this._wordData[node.label]
-            
-            if(wordInfo) {
-              this.setState({
-                  selectedNodeInfo: {
-                    ...wordInfo,
-                    isCenter: node.isCenter,
-                    starred: this.userData.starredWords.has(node.label)
-                  }
-                },
-                () => {
-                  this.showWordDetail();
-                  this.hideRelationDetail();
-                  this.graphState.originalDetailPanelPosition = {
-                    x: 20,
-                    y: 50,
-                    transform: "50%"
-                  };
-                }
-              );
-            }
+            this.showWordDetail(node);
+            this.hideRelationDetail();
           }
         } else if (edge) {
           this.graphState.selectedEdge = edge;
-          this.showRelationDetail()
+          this.showRelationDetail(edge)
           this.hideWordDetail()
           this.graphState.originalRelationPanelPosition = {
             x: "50%",
@@ -946,6 +930,9 @@ export default class RelationPage extends Component {
         } else {
           this.hideWordDetail()
           this.hideRelationDetail()
+          if(this.state.contextMenu.show) {
+            this.hideContextMenu()
+          }
         }
         this.drawGraph();
       }, 200);
@@ -956,6 +943,8 @@ export default class RelationPage extends Component {
         } else {
           this.expandNode(node)
         }
+      } else if(this.state.contextMenu.show) {
+        this.hideContextMenu()
       }
       this.clickCount = 0;
     }
@@ -980,26 +969,45 @@ export default class RelationPage extends Component {
 
   hideWordDetail = () => {
     this.setState({
-      showWordDetail: false
+      showWordDetail: false,
+      selectedNodeInfo: null
     })
     this.graphState.selectedNode = null
     this.drawGraph()
   }
-  groupedRelations = {}
-  showWordDetail = () => {
-    this.groupedRelations = this.state.selectedNodeInfo.relations.reduce((acc, rel) => {
-      const group = relation.getRelationGroup(rel.type);
-      if (!group) return acc;
+  
+  showWordDetail = (node: Node) => {
+    const wordInfo = this._wordData[node.label]
+    if(wordInfo) {
+      const groupedRelations = wordInfo.relations.reduce((acc, rel) => {
+        const group = relation.getRelationGroup(rel.type);
+        if (!group) return acc;
 
-      (acc[group] ??= []).push(rel);
-      return acc;
-    }, {});
-    this.setState({
-      showWordDetail: true
-    })
+        (acc[group] ??= []).push(rel);
+        return acc;
+      }, {})
+      this.setState({
+        showWordDetail: true,
+        selectedNodeInfo: {
+          ...wordInfo,
+          isCenter: node.isCenter,
+          starred: this.userData.starredWords.has(node.label)
+        },
+        groupedRelations
+      })
+    }
   };
 
-  showRelationDetail = () => {
+  showRelationDetail = (edge: Edge) => {
+    this.setState({
+      selectedEdgeInfo: {
+        type: relation.getRelationLabel(edge.type),
+        word: edge.source.label,
+        targetWord: edge.target.label,
+        examples: [],
+        strength: edge.strength
+      }
+    })
     this.setState({
       showRelationDetail: true
     })
@@ -1007,7 +1015,8 @@ export default class RelationPage extends Component {
 
   hideRelationDetail = () => {
     this.setState({
-      showRelationDetail: false
+      showRelationDetail: false,
+      selectedEdgeInfo: null
     })
     this.graphState.selectedEdge = null
     this.drawGraph()
@@ -1026,10 +1035,10 @@ export default class RelationPage extends Component {
 
   handleViewDetailsBtnClick = () => {
     const contextMenu = this.state.contextMenu
-    if(contextMenu.type === 'node') {
-      this.showWordDetail()
-    } else {
-      this.showRelationDetail()
+    if(contextMenu.node) {
+      this.showWordDetail(contextMenu.node)
+    } else if (contextMenu.edge) {
+      this.showRelationDetail(contextMenu.edge)
     }
     this.hideContextMenu()
   };
@@ -1197,7 +1206,7 @@ export default class RelationPage extends Component {
           </View>
 
           {this.state.showWordDetail && (
-            <FloatingPanel anchors={this.anchors} className="word-detail-panel" height={this.anchors[0]}>
+            <FloatingPanel anchors={this.word_anchors} className="word-detail-panel" height={this.word_anchors[1]}>
               <View className="word-detail-header">
                 <View>
                   <Text className="word-detail__title">{this.state.selectedNodeInfo.word}</Text>
@@ -1212,14 +1221,14 @@ export default class RelationPage extends Component {
                 </View>
               </View>
               <Tabs defaultValue="definition" className="word-detail-panel__tabs">
-                <Tabs.TabPane value="definition" title="释义" className="word-definition-content">
+                <Tabs.TabPane value="definition" title="释义" className="tabs-content__word_definition">
                   <View className="word-info">
                     <Text className="part-of-speech">{this.state.selectedNodeInfo.partOfSpeech}</Text>
                     <Text className="level">{this.state.selectedNodeInfo.level}</Text>
                   </View>
                   <View className="definition">{this.state.selectedNodeInfo.definition}</View>
                 </Tabs.TabPane>
-                <Tabs.TabPane value="relations" className="relation-content-pannel__tabs" title="关系">
+                <Tabs.TabPane value="relations" className="tabs-content__relation" title="关系">
                   <ScrollView scrollY>
                     <Collapse value={this.state.expanded} onChange={v => {
                       this.setState({
@@ -1228,7 +1237,7 @@ export default class RelationPage extends Component {
                     }}>
                       {
                         Object.keys(relation.RELATION_GROUPS).map((groupKey) => {
-                          const list = this.groupedRelations[groupKey]
+                          const list = this.state.groupedRelations[groupKey]
                           if (!list || list.length === 0) return null
                           const title = relation.getRelationGroupLabel(groupKey)
 
@@ -1254,7 +1263,7 @@ export default class RelationPage extends Component {
                     </Collapse>
                   </ScrollView>
                 </Tabs.TabPane>
-                <Tabs.TabPane value="examples" title="例句">
+                <Tabs.TabPane value="examples" title="例句" className="tabs-content__example">
                   <View className="examples order-list">
                     {this.state.selectedNodeInfo.examples.map((example, index) => (
                       <View key={index} className="word-example-item list-item">
@@ -1269,10 +1278,9 @@ export default class RelationPage extends Component {
           )}
 
           {this.state.showRelationDetail && (
-            <View className="relation-detail" style={this.getPannelStyle(this.graphState.originalRelationPanelPosition)}>
+            <FloatingPanel anchors={this.relation_anchors} className="relation-detail-panel" height={this.relation_anchors[1]}>
                 <View className="detail-header">
-                    <View className="relation-title">{this.state.selectedEdgeInfo.type}</View>
-                    <button className="close-btn">×</button>
+                  <View className="relation-title">{this.state.selectedEdgeInfo.type}</View>
                 </View>
                 <View id="relationWords">{this.state.selectedEdgeInfo.word} ↔ {this.state.selectedEdgeInfo.targetWord}</View>
                 <View className="relation-example">
@@ -1286,7 +1294,7 @@ export default class RelationPage extends Component {
                 <View className="relation-strength" id="relationStrength">
                     关系强度: {this.state.selectedEdgeInfo.strength}
                 </View>
-            </View>
+            </FloatingPanel>
           )}
 
           {this.state.contextMenu.show && (
@@ -1305,14 +1313,15 @@ export default class RelationPage extends Component {
                 <Text>📖</Text> 查看详情
               </View>
               {
-                this.state.contextMenu.type === 'node' && (
+                this.state.contextMenu.node && (
                   <>
-                    {this.state.selectedNodeInfo.starred ? (
+                    { this.state.contextMenu.node.isStarred ? (
                       // starred = true → 显示“取消收藏”
                       <View
                         className="context-menu-item remove-from-favorites"
                         onClick={() => {
                           this.userData.starredWords.delete(this.state.selectedNodeInfo.word)
+                          this.hideContextMenu()
                           this.drawGraph()
                         }}
                       >
@@ -1324,6 +1333,7 @@ export default class RelationPage extends Component {
                         className="context-menu-item add-to-favorites"
                         onClick={() => {
                           this.userData.starredWords.add(this.state.selectedNodeInfo.word)
+                          this.hideContextMenu()
                           this.drawGraph()
                         }}
                       >
@@ -1349,11 +1359,12 @@ export default class RelationPage extends Component {
                 )
               }
 
-              {!this.state.selectedNodeInfo.isCenter && (
+              {!this.state.contextMenu.node?.isCenter && (
                 <View className="context-menu-item remove-from-graph" onClick={() => {
                   const contextMenu = this.state.contextMenu
                   if (!contextMenu.type) return
-                  else if (this.state.contextMenu.type == 'node') {
+                  else if (contextMenu.type == 'node') {
+                    this.hideContextMenu()
                     this.removeNodeFromGraph()
                   } else {
                     this.removeEdgeFromGraph()

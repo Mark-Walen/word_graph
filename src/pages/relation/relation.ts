@@ -149,9 +149,7 @@ export const RELATION_LABELS = {
   [RELATION_TYPES.CUSTOM]: "自定义关系"
 };
 
-export const getRelationColor = (relationType: string): string => {
-  console.log(relationType);
-  
+export const getRelationColor = (relationType: string): string => {  
   if (RELATION_GROUPS.semantic.includes(relationType)) {
       return "#4CAF50"; // 绿色
   } else if (RELATION_GROUPS.formal.includes(relationType)) {
