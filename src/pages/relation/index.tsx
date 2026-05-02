@@ -12,10 +12,8 @@ import * as relation from "./relation";
 import "./index.scss";
 import wordData from "./word-relation-data.json";
 import { Search, Star, StarOutlined } from "@taroify/icons";
-import SearchPage from "../search";
 import Tabs from "@taroify/core/tabs";
 import { Collapse, FloatingPanel } from "@taroify/core";
-import Button from "@taroify/core/button/button";
 
 interface RelationBase {
   word: string;
@@ -800,6 +798,7 @@ export default class RelationPage extends Component {
   }
 
   handleTouchStart = (e: CanvasTouchEvent) => {
+    const touchNum = e.touches.length
     const touch = e.touches[0];
     if (!touch) {
       return

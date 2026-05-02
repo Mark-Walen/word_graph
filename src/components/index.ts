@@ -1,2 +1,5 @@
 export { default as EChart } from "./echarts"
 export { default as EcCanvas } from "./ec-canvas"
+export { default as IosSlider } from "./ios-slider"
+export { default as WordGraphSearchBox } from "./word-graph-search-box"
+export type { QueryMode, ThemeMode } from "./word-graph-search-box"

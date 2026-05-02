@@ -1,0 +1,386 @@
+$transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+$transition-smooth: 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+$transition-spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ============================================================
+// Light theme (default) — matches Figma "white glass" aesthetic
+// ============================================================
+.wsb-capsule,
+.wsb-capsule.wsb-theme-light {
+  --wsb-capsule-bg: rgba(255, 255, 255, 0.8);
+  --wsb-capsule-border: 1px solid rgba(0, 0, 0, 0.05);
+  --wsb-capsule-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --wsb-capsule-shadow-collapsed: 0 8px 28px rgba(0, 0, 0, 0.08);
+
+  --wsb-text-primary: #000000;
+  --wsb-text-secondary: rgba(0, 0, 0, 0.5);
+  --wsb-text-tertiary: rgba(0, 0, 0, 0.3);
+
+  --wsb-input-shell-bg: rgba(0, 0, 0, 0.05);
+  --wsb-input-bg: transparent;
+
+  --wsb-segmented-bg: rgba(0, 0, 0, 0.05);
+  --wsb-segmented-active-bg: #ffffff;
+  --wsb-segmented-active-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  --wsb-icon-bg: rgba(0, 0, 0, 0.05);
+  --wsb-icon-bg-active: rgba(0, 0, 0, 0.1);
+  --wsb-icon-color: rgba(0, 0, 0, 0.6);
+
+  --wsb-clear-bg: rgba(0, 0, 0, 0.06);
+  --wsb-clear-bg-active: rgba(0, 0, 0, 0.14);
+
+  --wsb-slider-rail: rgba(0, 0, 0, 0.1);
+  --wsb-slider-badge-bg: #eff6ff;
+  --wsb-slider-badge-color: #2563eb;
+
+  --wsb-accent: #2563eb;
+  --wsb-accent-glow: rgba(37, 99, 235, 0.3);
+  --wsb-accent-text: #ffffff;
+
+  --wsb-blur: blur(60px);
+}
+
+// ============================================================
+// Dark theme
+// ============================================================
+.wsb-capsule.wsb-theme-dark {
+  --wsb-capsule-bg: rgba(28, 28, 30, 0.82);
+  --wsb-capsule-border: 1px solid rgba(255, 255, 255, 0.12);
+  --wsb-capsule-shadow: 0 20px 50px rgba(0, 0, 0, 0.4),
+    0 0 0 0.5px rgba(255, 255, 255, 0.08);
+  --wsb-capsule-shadow-collapsed: 0 16px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 0.5px rgba(255, 255, 255, 0.1);
+
+  --wsb-text-primary: #ffffff;
+  --wsb-text-secondary: rgba(255, 255, 255, 0.6);
+  --wsb-text-tertiary: rgba(255, 255, 255, 0.38);
+
+  --wsb-input-shell-bg: rgba(255, 255, 255, 0.08);
+  --wsb-input-bg: transparent;
+
+  --wsb-segmented-bg: rgba(255, 255, 255, 0.08);
+  --wsb-segmented-active-bg: rgba(255, 255, 255, 0.18);
+  --wsb-segmented-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+  --wsb-icon-bg: rgba(255, 255, 255, 0.08);
+  --wsb-icon-bg-active: rgba(255, 255, 255, 0.14);
+  --wsb-icon-color: rgba(255, 255, 255, 0.6);
+
+  --wsb-clear-bg: rgba(255, 255, 255, 0.08);
+  --wsb-clear-bg-active: rgba(255, 255, 255, 0.18);
+
+  --wsb-slider-rail: rgba(255, 255, 255, 0.1);
+  --wsb-slider-badge-bg: rgba(10, 132, 255, 0.15);
+  --wsb-slider-badge-color: #60a5fa;
+
+  --wsb-accent: #0a84ff;
+  --wsb-accent-glow: rgba(10, 132, 255, 0.35);
+  --wsb-accent-text: #ffffff;
+
+  --wsb-blur: saturate(180%) blur(28px);
+}
+
+// ============================================================
+// Backdrop — catches taps outside the capsule to dismiss
+// ============================================================
+.wsb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+// ============================================================
+// Capsule shell
+// ============================================================
+.wsb-capsule {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 20px) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 420px;
+  z-index: 1000;
+  border-radius: 24px;
+  background: var(--wsb-capsule-bg);
+  border: var(--wsb-capsule-border);
+  box-shadow: var(--wsb-capsule-shadow);
+  -webkit-backdrop-filter: var(--wsb-blur);
+  backdrop-filter: var(--wsb-blur);
+  padding: 12px;
+  transition: border-radius $transition-smooth,
+    box-shadow $transition-smooth,
+    background 0.25s ease,
+    padding $transition-smooth;
+  will-change: transform;
+}
+
+.wsb-capsule.wsb-collapsed {
+  border-radius: 28px;
+  box-shadow: var(--wsb-capsule-shadow-collapsed);
+  padding: 10px 12px;
+}
+
+// ============================================================
+// Expand area
+// ============================================================
+.wsb-expand-area {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height $transition-smooth,
+    opacity 0.25s ease,
+    margin 0.25s ease;
+  margin-bottom: 0;
+}
+
+.wsb-expand-area--visible {
+  max-height: 160px;
+  opacity: 1;
+  margin-bottom: 12px;
+}
+
+// ============================================================
+// Segmented Control — Figma style: rounded-2xl bg-black/5
+// ============================================================
+.wsb-segmented {
+  position: relative;
+  display: flex;
+  background: var(--wsb-segmented-bg);
+  border-radius: 16px;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+
+.wsb-segmented-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 3);
+  height: calc(100% - 8px);
+  background: var(--wsb-segmented-active-bg);
+  border-radius: 12px;
+  box-shadow: var(--wsb-segmented-active-shadow);
+  transition: transform $transition-spring;
+  z-index: 0;
+}
+
+.wsb-segment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  border-radius: 12px;
+  position: relative;
+  z-index: 1;
+  transition: color $transition-fast;
+  -webkit-tap-highlight-color: transparent;
+
+  text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--wsb-text-secondary);
+    transition: color $transition-fast;
+  }
+}
+
+.wsb-segment-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.wsb-segment--active text {
+  color: var(--wsb-text-primary);
+  font-weight: 600;
+}
+
+// ============================================================
+// Depth slider row — Figma style: "探索深度" + badge
+// ============================================================
+.wsb-depth-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.wsb-depth-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wsb-depth-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wsb-depth-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wsb-slider-badge-color);
+  background: var(--wsb-slider-badge-bg);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+// IosSlider overrides — apply capsule theme variables
+.wsb-slider-track .ios-slider-rail {
+  background: var(--wsb-slider-rail);
+}
+
+.wsb-slider-track .ios-slider-fill {
+  background: var(--wsb-accent);
+}
+
+// ============================================================
+// Search row — Figma layout: [photo] [input-shell]
+// ============================================================
+.wsb-search-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.wsb-collapsed .wsb-search-row {
+  align-items: center;
+}
+
+// Photo button — circular, bg-black/5
+.wsb-photo-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wsb-icon-bg);
+  color: var(--wsb-icon-color);
+  flex-shrink: 0;
+  transition: background $transition-fast, transform $transition-fast;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wsb-photo-btn:active {
+  background: var(--wsb-icon-bg-active);
+  transform: scale(0.92);
+}
+
+// Input shell — Figma: bg-black/5 rounded-3xl containing input + submit
+.wsb-input-shell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--wsb-input-shell-bg);
+  border-radius: 24px;
+  padding: 4px;
+  position: relative;
+  transition: background $transition-fast,
+    box-shadow $transition-fast;
+}
+
+.wsb-search-icon-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: var(--wsb-text-tertiary);
+  pointer-events: none;
+}
+
+.wsb-input {
+  flex: 1;
+  height: 40px;
+  background: var(--wsb-input-bg);
+  border: none;
+  outline: none;
+  padding: 0 4px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--wsb-text-primary);
+  caret-color: var(--wsb-accent);
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--wsb-text-tertiary);
+    font-size: 15px;
+    font-weight: 500;
+  }
+}
+
+// Clear button
+.wsb-clear-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wsb-text-tertiary);
+  background: var(--wsb-clear-bg);
+  flex-shrink: 0;
+  margin-right: 2px;
+  transition: background $transition-fast, color $transition-fast;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wsb-clear-btn:active {
+  background: var(--wsb-clear-bg-active);
+  color: var(--wsb-text-primary);
+}
+
+// Submit button — Figma: rounded-full inside the shell
+.wsb-submit-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all $transition-smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wsb-submit-btn--active {
+  background: var(--wsb-accent);
+  color: var(--wsb-accent-text);
+  box-shadow: 0 2px 12px var(--wsb-accent-glow);
+}
+
+.wsb-submit-btn:active {
+  transform: scale(0.9);
+}
+
+// ============================================================
+// Keyframes
+// ============================================================
+@keyframes wsb-fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wsb-expand-area--visible .wsb-segmented {
+  animation: wsb-fade-slide-in 0.3s ease both;
+}
+
+.wsb-expand-area--visible .wsb-depth-row {
+  animation: wsb-fade-slide-in 0.3s ease 0.04s both;
+}

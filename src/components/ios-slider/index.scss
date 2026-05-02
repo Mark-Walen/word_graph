@@ -1,0 +1,58 @@
+.ios-slider {
+  display: block;
+  margin: 0 14px;
+  overflow: visible;
+}
+
+.ios-slider-track {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  overflow: visible;
+}
+
+.ios-slider-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  margin-top: -2px;
+  top: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.ios-slider-fill {
+  position: absolute;
+  left: 0;
+  height: 4px;
+  margin-top: -2px;
+  top: 50%;
+  background: #0a84ff;
+  border-radius: 2px;
+  transition: width 0.12s ease-out;
+  pointer-events: none;
+}
+
+.ios-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  margin-top: -14px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ios-slider-thumb--active {
+  transform: scale(1.15);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+}

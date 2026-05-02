@@ -6,7 +6,8 @@ export default defineAppConfig({
     'pages/user/edit-profile',
 
     'pages/learn/index',
-    'pages/relation/index'
+    'pages/relation/index',
+    'pages/relation/relation-path'
   ],
   window: {
     backgroundTextStyle: 'light',

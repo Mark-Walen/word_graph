@@ -1,0 +1,112 @@
+.tag-select {
+  position: relative;
+}
+
+.tag-select__trigger {
+  width: 100%;
+}
+
+.tag-select__field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 92px;
+  padding: 12px 20px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
+}
+
+.tag-select__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.tag-select__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  color: #0b1220;
+}
+
+.tag-select__chip-label,
+.tag-select__placeholder,
+.tag-select__caret {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.tag-select__placeholder {
+  color: rgba(11, 18, 32, 0.46);
+}
+
+.tag-select__caret {
+  margin-left: 12px;
+  color: rgba(11, 18, 32, 0.58);
+}
+
+.tag-select__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+
+.tag-select__panel {
+  min-width: 300px;
+  padding: 12px;
+  border-radius: 24px;
+  background: rgba(8, 15, 30, 0.96);
+  border: 1px solid rgba(126, 234, 215, 0.18);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.34);
+  color: #f5f7ff;
+}
+
+.tag-select__coords {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: rgba(245, 247, 255, 0.54);
+}
+
+.tag-select__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  padding: 0 14px;
+  border-radius: 14px;
+  transition: background-color 160ms ease;
+}
+
+.tag-select__item + .tag-select__item {
+  margin-top: 8px;
+}
+
+.tag-select__item:not(.is-disabled):active {
+  background: rgba(126, 234, 215, 0.16);
+}
+
+.tag-select__item.is-selected {
+  background: rgba(126, 234, 215, 0.12);
+}
+
+.tag-select__item.is-disabled {
+  opacity: 0.45;
+}
+
+.tag-select__item-label {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.tag-select__check {
+  font-size: 24px;
+  font-weight: 700;
+  color: #7eead7;
+}
