@@ -19,14 +19,19 @@ interface BaseChartProps {
 
 class BaseChart extends Component<BaseChartProps, BaseChartState> {
   state = {
-    ec: {
-      lazyLoad: true,
-    },
+    ec: { lazyLoad: true },
   };
 
   Chart: any;
+  _chart: any = null;
 
   refresh = (data: any) => {
+    if (this._chart) {
+      this._chart.dispatchAction({ type: "downplay" });
+      this._chart.setOption(data, true);
+      return;
+    }
+
     this.Chart.init((canvas, width, height, canvasDpr) => {
       const chart = echarts.init(canvas, null, {
         width: width,
@@ -35,6 +40,7 @@ class BaseChart extends Component<BaseChartProps, BaseChartState> {
       });
       canvas.setChart(chart);
       chart.setOption(data);
+      this._chart = chart;
 
       chart.on("click", (params: unknown) => {
         if (typeof this.props.onClick === "function") {
@@ -83,6 +89,12 @@ class BaseChart extends Component<BaseChartProps, BaseChartState> {
   };
 
   refChart = (node) => (this.Chart = node);
+
+  downplay = () => {
+    if (this._chart) {
+      this._chart.dispatchAction({ type: "downplay" });
+    }
+  };
 
   render() {
     const { canvasId } = this.props;

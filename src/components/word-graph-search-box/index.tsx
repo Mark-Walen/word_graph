@@ -99,6 +99,9 @@ export default function WordGraphSearchBox({
       }
       setFocused(true);
       onQueryModeChange(mode);
+      blurTimerRef.current = setTimeout(() => {
+        setFocused(false);
+      }, 1500);
     },
     [onQueryModeChange]
   );

@@ -4,6 +4,13 @@
   flex-direction: column;
   background: #f8f9fb;
 
+  .fp-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
   .header {
     .title {
       font-size: 16px;
@@ -17,7 +24,7 @@
     }
     .pickers {
       padding: 12px 16px 8px;
-      display: inline-flex; /* inline flex as requested */
+      display: inline-flex;
       gap: 8px;
       margin-top: 8px;
       align-items: center;
@@ -55,6 +62,7 @@
     background: #ffffff;
     box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     position: relative;
+    overflow: hidden;
 
     .relation-graph {
       width: 100%;
@@ -62,83 +70,257 @@
     }
   }
 
-  .context-menu {
+  // ============================================================
+  // Context Menu
+  // ============================================================
+  .ctx-backdrop {
     position: absolute;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    z-index: 30;
-    min-width: 144px;
-    padding: 4px 0;
+    inset: 0;
+    z-index: 39;
+  }
 
-    .context-menu-item {
-      padding: 8px 16px;
-      transition: background 0.2s;
+  .ctx-menu {
+    position: absolute;
+    z-index: 40;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+    min-width: 144px;
+    padding: 6px;
+    transform: translate(-50%, -110%);
+
+    .ctx-menu-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #1e293b;
+      transition: background 0.15s ease;
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+
+    .ctx-menu-item:active {
+      background: #f1f5f9;
+    }
+
+    .ctx-menu-item--danger:active {
+      background: #fef2f2;
+    }
+
+    .ctx-menu-item--danger {
+      color: #dc2626;
+    }
+
+    .ctx-menu-icon {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
     }
   }
 
+  // ============================================================
+  // Word Detail Panel — Redesigned
+  // ============================================================
   .word-detail-panel {
-    .word-detail-header {
-      padding: 0 32rpx;
+    padding: 20rpx 32rpx 0;
 
-      .word-detail__title {
-        font-size: 40rpx;
-        font-weight: bold;
-        color: #323232;
-      }
-      .word-detail__phonetic {
-        font-size: 28rpx;
-        color: #5a5a5c;
-        padding: 0 16rpx;
-      }
-      .star {
-        font-size: 14px;
-      }
+    .wdp-header {
+      padding-bottom: 20rpx;
     }
 
-    .word-detail-panel__tabs {
-      --tabs-wrap-height: 88rpx;
-      --tab-active-font-weight: bold;
-      --tab-font-size: 40rpx;
-      --tabs-line-height: 8rpx;
-      --padding-sm: 32rpx;
+    .wdp-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16rpx;
+    }
 
-      .taroify-tabs__wrap {
-        margin-bottom: 24rpx;
+    .wdp-word {
+      font-size: 44rpx;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .wdp-meta {
+      display: flex;
+      align-items: center;
+      gap: 8rpx;
+    }
+
+    .wdp-pos {
+      font-size: 24rpx;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 4rpx 14rpx;
+      border-radius: 6rpx;
+    }
+
+    .wdp-level {
+      font-size: 22rpx;
+      color: #2563eb;
+      background: #eff6ff;
+      padding: 4rpx 12rpx;
+      border-radius: 6rpx;
+    }
+
+    .wdp-phonetic {
+      font-size: 26rpx;
+      color: #94a3b8;
+      margin-top: 8rpx;
+    }
+
+    .wdp-divider {
+      height: 1rpx;
+      background: #e2e8f0;
+      margin: 0 -32rpx;
+    }
+
+    .wdp-definition {
+      font-size: 30rpx;
+      color: #334155;
+      line-height: 1.7;
+      padding: 24rpx 0;
+    }
+
+    .wdp-relations-scroll {
+      max-height: 320rpx;
+    }
+
+    .wdp-rel-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12rpx;
+    }
+
+    .wdp-rel-item {
+      display: flex;
+      align-items: center;
+      border-left: 6rpx solid;
+      padding: 16rpx 20rpx;
+      background: #f8fafc;
+      border-radius: 0 10rpx 10rpx 0;
+    }
+
+    .wdp-rel-type {
+      font-size: 28rpx;
+      color: #475569;
+      margin-right: 12rpx;
+    }
+
+    .wdp-rel-word {
+      font-size: 28rpx;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .wdp-section-label {
+      font-size: 26rpx;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1rpx;
+      margin-bottom: 12rpx;
+    }
+
+    .wdp-examples {
+      padding: 20rpx 0 32rpx;
+    }
+
+    .wdp-example-item {
+      display: flex;
+      gap: 10rpx;
+      padding: 14rpx 0;
+      border-bottom: 1rpx solid #f1f5f9;
+    }
+
+    .wdp-example-idx {
+      font-size: 26rpx;
+      color: #94a3b8;
+      flex-shrink: 0;
+      min-width: 32rpx;
+    }
+
+    .wdp-example-text {
+      font-size: 28rpx;
+      color: #334155;
+      line-height: 1.6;
+      flex: 1;
+    }
+  }
+
+  // ============================================================
+  // Relation Detail Panel
+  // ============================================================
+  .relation-detail-panel {
+    padding: 0 32rpx;
+
+    .relation-detail-header {
+      padding: 16rpx 0 12rpx;
+    }
+
+    .relation-detail-title {
+      font-size: 36rpx;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .relation-detail-words {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16rpx;
+      padding: 24rpx 0;
+    }
+
+    .relation-detail-word {
+      font-size: 36rpx;
+      font-weight: 600;
+      color: #1e293b;
+      padding: 8rpx 24rpx;
+      background: #f1f5f9;
+      border-radius: 12rpx;
+    }
+
+    .relation-detail-arrow {
+      font-size: 32rpx;
+      color: #64748b;
+    }
+
+    .relation-detail-strength {
+      font-size: 28rpx;
+      color: #64748b;
+      text-align: center;
+      padding: 24rpx 0;
+      border-top: 1rpx solid #f1f5f9;
+    }
+
+    .relation-detail-examples {
+      padding: 16rpx 0;
+    }
+
+    .relation-detail-example-item {
+      display: flex;
+      gap: 8rpx;
+      padding: 14rpx 0;
+      border-bottom: 1rpx solid #f1f5f9;
+
+      .list-index {
+        font-size: 26rpx;
+        color: #94a3b8;
+        flex-shrink: 0;
+        min-width: 32rpx;
       }
 
-      .word-info {
-        .part-of-speech {
-          display: inline-block;
-          background: #e0e0e0;
-          padding: 4rpx 16rpx;
-          border-radius: 8rpx;
-          font-size: 12px;
-          margin-right: 12rpx;
-        }
-      }
-
-      .tabs-content__word_definition, .tabs-content__example {
-        padding: 0 32rpx;
-      }
-
-      .tabs-content__word_definition .definition {
-        margin-top: 8rpx;
+      .list-text {
+        font-size: 26rpx;
+        color: #475569;
         line-height: 1.5;
+        flex: 1;
       }
-    }
-
-    .tabs-content__relation {
-      --cell-vertical-padding: 24rpx;
-      --cell-horizontal-padding: 32rpx;
-      overflow: hidden;
-      --cell-font-size: 40rpx;
-      --cell-line-height: 80rpx;
-      // --cell-color: #555;
-      --collapse-item-content-padding: 32rpx;
-      --padding-md: 32rpx;
     }
   }
 }

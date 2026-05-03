@@ -1,49 +1,103 @@
 .ios-slider {
   display: block;
-  margin: 0 14px;
   overflow: visible;
 }
 
+.ios-slider--horizontal {
+  margin: 0 var(--ios-track-pad, 14px);
+}
+
+.ios-slider--vertical {
+  margin: var(--ios-track-pad, 14px) 0;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+}
+
+// ============================================================
+// Track
+// ============================================================
+
 .ios-slider-track {
   position: relative;
-  height: 40px;
-  display: flex;
-  align-items: center;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
   overflow: visible;
 }
 
+.ios-slider--horizontal .ios-slider-track {
+  height: calc(var(--ios-thumb-px, 28px) + var(--ios-track-pad, 14px));
+  display: flex;
+  align-items: center;
+}
+
+.ios-slider--vertical .ios-slider-track {
+  width: calc(var(--ios-thumb-px, 28px) + var(--ios-track-pad, 14px));
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+// ============================================================
+// Rail
+// ============================================================
+
 .ios-slider-rail {
   position: absolute;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.ios-slider--horizontal .ios-slider-rail {
   left: 0;
   right: 0;
   height: 4px;
   margin-top: -2px;
   top: 50%;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
 }
+
+.ios-slider--vertical .ios-slider-rail {
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  margin-left: -2px;
+  left: 50%;
+}
+
+// ============================================================
+// Fill
+// ============================================================
 
 .ios-slider-fill {
   position: absolute;
+  background: #0a84ff;
+  border-radius: 2px;
+  transition: width 0.12s ease-out, height 0.12s ease-out;
+  pointer-events: none;
+}
+
+.ios-slider--horizontal .ios-slider-fill {
   left: 0;
   height: 4px;
   margin-top: -2px;
   top: 50%;
-  background: #0a84ff;
-  border-radius: 2px;
-  transition: width 0.12s ease-out;
-  pointer-events: none;
 }
+
+.ios-slider--vertical .ios-slider-fill {
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  margin-left: -2px;
+}
+
+// ============================================================
+// Thumb
+// ============================================================
 
 .ios-slider-thumb {
   position: absolute;
-  top: 50%;
-  width: 28px;
-  height: 28px;
-  margin-left: -14px;
-  margin-top: -14px;
+  width: var(--ios-thumb-px, 28px);
+  height: var(--ios-thumb-px, 28px);
   background: #ffffff;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
@@ -52,7 +106,32 @@
   pointer-events: none;
 }
 
+.ios-slider--horizontal .ios-slider-thumb {
+  top: 50%;
+  margin-top: calc(var(--ios-thumb-px, 28px) / -2);
+  margin-left: calc(var(--ios-thumb-px, 28px) / -2);
+}
+
+.ios-slider--vertical .ios-slider-thumb {
+  left: 50%;
+  margin-bottom: calc(var(--ios-thumb-px, 28px) / -2);
+  margin-left: calc(var(--ios-thumb-px, 28px) / -2);
+}
+
 .ios-slider-thumb--active {
   transform: scale(1.15);
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+}
+
+// ============================================================
+// States
+// ============================================================
+
+.ios-slider--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.ios-slider--readonly {
+  pointer-events: none;
 }
