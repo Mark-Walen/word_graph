@@ -252,7 +252,7 @@ export default function RelationPage() {
     });
     setShowEdgeDetail(true);
     setShowDetail(false);
-  }, []);
+  }, [wordGraph]);
 
   const hideDetails = useCallback(() => {
     setShowDetail(false);
@@ -281,7 +281,7 @@ export default function RelationPage() {
     });
   }, [centerWord, hideDetails, wordGraph, loadWordGraph]);
 
-  const handlePlayExample = useCallback(async (text: string) => {
+  const handlePlayExample = useCallback(async (_text: string) => {
     // TODO: 对接自有后端 TTS API
     Taro.showToast({ title: "TTS 暂未接入", icon: "none" });
   }, []);
