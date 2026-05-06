@@ -1,8 +1,9 @@
 import { View, Text } from "@tarojs/components";
 import Taro, { useLoad } from "@tarojs/taro";
 import { Star, StarOutlined, VolumeOutlined } from "@taroify/icons";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import "./index.scss";
+import { fetchWordDetail } from "../relation/graph-api";
 
 interface WordDetailData {
   word: string
@@ -14,28 +15,30 @@ interface WordDetailData {
 }
 
 export default function WordDetailPage() {
-  const [data, setData] = useState<WordDetailData>({
-    word: "benevolent",
-    type: "adj.",
-    phonetic: "/bəˈnevələnt/",
-    meaning: "well meaning and kindly; charitable in disposition and conduct",
-    examples: [
-      "She had a benevolent smile that put everyone at ease.",
-      "A benevolent organization donated supplies to the village.",
-    ],
-    starred: true,
-  })
+  const [data, setData] = useState<WordDetailData | null>(null)
 
   useLoad((query) => {
     const word = query.word as string | undefined
     if (word) {
-      // TODO: fetch real data by word; using placeholder for now
-      setData((prev) => ({ ...prev, word }))
       Taro.setNavigationBarTitle({ title: word })
+      fetchWordDetail(word)
+        .then((json) => {
+          setData({
+            word: json.word,
+            type: json.partOfSpeech,
+            phonetic: json.phonetic,
+            meaning: json.definition,
+            examples: json.examples,
+            starred: json.starred ?? false,
+          })
+        })
+        .catch(() => {})
     }
   })
 
-  const toggleStar = () => setData(prev => ({ ...prev, starred: !prev.starred }))
+  const toggleStar = useCallback(() => {
+    setData((prev) => prev ? { ...prev, starred: !prev.starred } : null)
+  }, [])
 
   const playAudio = () => {
     // TODO: integrate TTS/audio source if available in your backend
@@ -44,32 +47,42 @@ export default function WordDetailPage() {
 
   return (
     <View className="word-detail-page">
-      <View className="card">
-        <View className="header">
-          <Text className="word">{data.word}</Text>
-          <Text className="type">{data.type}</Text>
-        </View>
-        {data.phonetic && (
-          <View className="phonetic">
-            <Text>{data.phonetic}</Text>
-            <Text style={{ marginLeft: 8 }} onClick={playAudio}>
-              <VolumeOutlined />
-            </Text>
+      {!data ? (
+        <View className="card">
+          <View className="header">
+            <Text className="word">加载中...</Text>
           </View>
-        )}
-        <View className="meaning">{data.meaning}</View>
-        <View style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }} onClick={toggleStar}>
-          {data.starred ? <Star className="starred" /> : <StarOutlined />}
         </View>
-      </View>
+      ) : (
+        <>
+          <View className="card">
+            <View className="header">
+              <Text className="word">{data.word}</Text>
+              <Text className="type">{data.type}</Text>
+            </View>
+            {data.phonetic && (
+              <View className="phonetic">
+                <Text>{data.phonetic}</Text>
+                <Text style={{ marginLeft: 8 }} onClick={playAudio}>
+                  <VolumeOutlined />
+                </Text>
+              </View>
+            )}
+            <View className="meaning">{data.meaning}</View>
+            <View style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }} onClick={toggleStar}>
+              {data.starred ? <Star className="starred" /> : <StarOutlined />}
+            </View>
+          </View>
 
-      {data.examples && data.examples.length > 0 && (
-        <View className="section">
-          <View className="section-title">例句</View>
-          {data.examples.map((ex, idx) => (
-            <View key={idx} className="example" style={{ marginTop: idx === 0 ? 0 : 8 }}>{ex}</View>
-          ))}
-        </View>
+          {data.examples && data.examples.length > 0 && (
+            <View className="section">
+              <View className="section-title">例句</View>
+              {data.examples.map((ex, idx) => (
+                <View key={idx} className="example" style={{ marginTop: idx === 0 ? 0 : 8 }}>{ex}</View>
+              ))}
+            </View>
+          )}
+        </>
       )}
     </View>
   )

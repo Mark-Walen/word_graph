@@ -33,6 +33,12 @@ function mouseEvt(x: number, y: number) {
   return {
     zrX: x,
     zrY: y,
+    offsetX: x,
+    offsetY: y,
+    clientX: x,
+    clientY: y,
+    pageX: x,
+    pageY: y,
     preventDefault: () => {},
     stopPropagation: () => {},
     stopImmediatePropagation: () => {},

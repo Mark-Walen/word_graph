@@ -1,4 +1,4 @@
-{
+export default {
   "happy": {
     "word": "happy",
     "phonetic": "/ˈhæpi/",
@@ -6675,4 +6675,4 @@
       }
     ]
   }
-}
+};

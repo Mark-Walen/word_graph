@@ -1,0 +1,100 @@
+.cfp-root {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 16;
+  display: flex;
+  flex-direction: column;
+  touch-action: none;
+  border-top-left-radius: 24rpx;
+  border-top-right-radius: 24rpx;
+  background: #ffffff;
+  will-change: transform;
+  overflow: hidden;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+
+  &::after {
+    position: absolute;
+    bottom: -100vh;
+    left: 0;
+    right: 0;
+    display: block;
+    height: 100vh;
+    content: "";
+    background-color: inherit;
+  }
+}
+
+.cfp-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12rpx 32rpx 0;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  z-index: 1;
+
+  .cfp-drag-bar {
+    width: 72rpx;
+    height: 8rpx;
+    background: #d1d5db;
+    border-radius: 4rpx;
+    margin-bottom: 12rpx;
+    flex-shrink: 0;
+  }
+
+  .cfp-header-content {
+    width: 100%;
+    padding-bottom: 16rpx;
+  }
+
+  .cfp-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16rpx;
+  }
+
+  .cfp-word {
+    font-size: 48rpx;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 1rpx;
+  }
+
+  .cfp-meta {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+  }
+
+  .cfp-pos {
+    font-size: 24rpx;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4rpx 14rpx;
+    border-radius: 6rpx;
+  }
+
+  .cfp-level {
+    font-size: 22rpx;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 4rpx 12rpx;
+    border-radius: 6rpx;
+  }
+
+  .cfp-phonetic {
+    font-size: 26rpx;
+    color: #94a3b8;
+    margin-top: 6rpx;
+    width: 100%;
+  }
+}
+
+.cfp-body {
+  flex: 1;
+  overflow-y: auto;
+  background: #ffffff;
+}

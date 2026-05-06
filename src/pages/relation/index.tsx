@@ -1,11 +1,10 @@
-import { View, Text, Picker, ScrollView } from "@tarojs/components";
+import { View, Text, Picker, Input } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
-import { Collapse, FloatingPanel } from "@taroify/core";
 import * as relation from "./relation";
 import "./index.scss";
-import wordData from "./word-relation-data.json";
-import EChart from "@/components/echarts";
+import { WordDetailPanel, EChart, FloatingPanel } from "@/components";
+import { fetchSubgraph, convertApiSubgraphToWordGraph } from "./graph-api";
 
 const RELATION_LABELS: Record<string, string> = {
   all: "全部关系",
@@ -62,12 +61,13 @@ function resolveRouteWord(): { word: string; mode: string } {
 }
 
 function buildEChartsOption(
+  wordData: Record<string, any>,
   centerWord: string,
   visibleTypes: Set<string>,
   filterKey: string,
   removedNodeIds: Set<string>
 ): { option: any; availableGroupKeys: string[] } | null {
-  const entry = (wordData as Record<string, any>)[centerWord];
+  const entry = wordData[centerWord];
   if (!entry) return null;
 
   const allRels = entry.relations || [];
@@ -90,7 +90,7 @@ function buildEChartsOption(
   const catMap = new Map<string, number>();
 
   filteredRels.forEach((rel: any) => {
-    if (!(wordData as Record<string, any>)[rel.word]) return;
+    if (!wordData[rel.word]) return;
     const group = relation.getRelationGroup(rel.type) || "other";
     const color = relation.getRelationColor(rel.type);
     if (!catMap.has(group) && group !== "other") {
@@ -106,6 +106,8 @@ function buildEChartsOption(
     });
     edges.push({
       source: centerWord, target: rel.word,
+      symbol: ["diamond", "arrow"],
+      symbolSize: [8, 8],
       label: { show: true, formatter: relation.getRelationLabel(rel.type), fontSize: 10, color: "#64748b" },
       lineStyle: { width: 2 + rel.strength * 1.5, color, opacity: 0.7 },
     });
@@ -160,18 +162,23 @@ export default function RelationPage() {
   const paramsRef = useRef(route);
   const [centerWord, setCenterWord] = useState(route.word);
 
+  const [wordGraph, setWordGraph] = useState<Record<string, any>>({});
+
   const [removedNodeIds, setRemovedNodeIds] = useState<Set<string>>(new Set());
 
   const [filterKey, setFilterKey] = useState<string>("all");
   const [displayMode, setDisplayMode] = useState<string>("all");
   const [starredWords, setStarredWords] = useState<Set<string>>(new Set());
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const visibleTypes = useMemo(() => computeVisibleTypes(filterKey, displayMode), [filterKey, displayMode]);
 
   const { availableGroupKeys, chartOption } = useMemo(() => {
-    const result = buildEChartsOption(centerWord, visibleTypes, filterKey, removedNodeIds);
+    const result = buildEChartsOption(wordGraph, centerWord, visibleTypes, filterKey, removedNodeIds);
     if (!result) return { availableGroupKeys: [] as string[], chartOption: null as any };
     return { availableGroupKeys: result.availableGroupKeys, chartOption: result.option };
-  }, [centerWord, visibleTypes, filterKey, removedNodeIds]);
+  }, [wordGraph, centerWord, visibleTypes, filterKey, removedNodeIds]);
 
   const relationPickerKeys = useMemo(() => ["all", ...availableGroupKeys] as string[], [availableGroupKeys]);
   const relationPickerRange = useMemo(() => ["全部关系", ...availableGroupKeys.map((k) => (RELATION_LABELS as any)[k] || k)], [availableGroupKeys]);
@@ -183,7 +190,6 @@ export default function RelationPage() {
   const [groupedRelations, setGroupedRelations] = useState<Record<string, Array<{ word: string; type: string; strength: number }>>>({});
   const [showEdgeDetail, setShowEdgeDetail] = useState(false);
   const [edgeDetail, setEdgeDetail] = useState<EdgeInfo>(emptyEdgeInfo());
-  const [expanded, setExpanded] = useState<string[]>([]);
   const chartRef = useRef<any>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -192,6 +198,7 @@ export default function RelationPage() {
   }>({ show: false, x: 0, y: 0, nodeId: "" });
 
   const windowHeight = Taro.getWindowInfo().windowHeight;
+
   const wordAnchors = [0, Math.round(0.3 * windowHeight), Math.round(0.8 * windowHeight)];
   const relationAnchors = [0, Math.round(0.3 * windowHeight)];
 
@@ -203,6 +210,12 @@ export default function RelationPage() {
     paramsRef.current = { word: rawWord, mode };
     Taro.setNavigationBarTitle({ title: `${mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${rawWord}` });
     if (rawWord !== centerWord) setCenterWord(rawWord);
+
+    fetchSubgraph(rawWord, 1)
+      .then((data) => {
+        setWordGraph(convertApiSubgraphToWordGraph(data))
+      })
+      .catch(() => {});
   });
 
   const onFilterChange = useCallback((e: any) => {
@@ -215,7 +228,7 @@ export default function RelationPage() {
   }, []);
 
   const showNodeDetail = useCallback((nodeId: string) => {
-    const entry = (wordData as Record<string, any>)[nodeId];
+    const entry = wordGraph[nodeId];
     if (!entry) return;
     const grouped = entry.relations.reduce((acc: Record<string, any[]>, rel: any) => {
       const group = relation.getRelationGroup(rel.type);
@@ -227,10 +240,10 @@ export default function RelationPage() {
     setGroupedRelations(grouped);
     setShowDetail(true);
     setShowEdgeDetail(false);
-  }, [centerWord, starredWords]);
+  }, [centerWord, starredWords, wordGraph]);
 
   const showEdgeRelationDetail = useCallback((source: string, target: string) => {
-    const entry = (wordData as Record<string, any>)[source];
+    const entry = wordGraph[source];
     if (!entry) return;
     const rel = entry.relations?.find?.((r: any) => r.word === target);
     setEdgeDetail({
@@ -251,6 +264,45 @@ export default function RelationPage() {
     chartRef.current?.downplay?.();
   }, []);
 
+  const loadWordGraph = useCallback((word: string) => {
+    setCenterWord(word);
+    fetchSubgraph(word, 1)
+      .then((data) => setWordGraph(convertApiSubgraphToWordGraph(data)))
+      .catch(() => {});
+  }, []);
+
+  const handleNavigateToWord = useCallback((word: string) => {
+    const entry = wordGraph[word];
+    if (!entry || word === centerWord) return;
+    loadWordGraph(word);
+    hideDetails();
+    Taro.setNavigationBarTitle({
+      title: `${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${word}`,
+    });
+  }, [centerWord, hideDetails, wordGraph, loadWordGraph]);
+
+  const handlePlayExample = useCallback(async (text: string) => {
+    // TODO: 对接自有后端 TTS API
+    Taro.showToast({ title: "TTS 暂未接入", icon: "none" });
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    const word = searchText.trim();
+    if (!word) return;
+    const entry = wordGraph[word];
+    if (!entry) {
+      Taro.showToast({ title: `未找到 "${word}"`, icon: "none" });
+      return;
+    }
+    loadWordGraph(word);
+    setShowSearch(false);
+    setSearchText("");
+    hideDetails();
+    Taro.setNavigationBarTitle({
+      title: `${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${word}`,
+    });
+  }, [searchText, hideDetails, wordGraph, loadWordGraph]);
+
   const handleContextMenuAction = useCallback((action: string) => {
     const nodeId = contextMenu.nodeId;
     hideContextMenu();
@@ -263,7 +315,7 @@ export default function RelationPage() {
         return next;
       });
     } else if (action === "center") {
-      const entry = (wordData as Record<string, any>)[nodeId];
+      const entry = wordGraph[nodeId];
       if (!entry || nodeId === centerWord) return;
       setCenterWord(nodeId);
       hideDetails();
@@ -275,7 +327,7 @@ export default function RelationPage() {
         return next;
       });
     }
-  }, [contextMenu.nodeId, centerWord, hideDetails, hideContextMenu, showNodeDetail]);
+  }, [contextMenu.nodeId, centerWord, hideDetails, hideContextMenu, showNodeDetail, wordGraph]);
 
   const handleChartMousedown = useCallback((params: any) => {
     if (params.dataType !== "node") return;
@@ -285,12 +337,15 @@ export default function RelationPage() {
     }, 500);
   }, []);
 
-  const handleChartMouseup = useCallback((_params: any) => {
+  const handleChartMouseup = useCallback((params: any) => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
-  }, []);
+    if (params.dataType === "edge" && params.data) {
+      showEdgeRelationDetail(params.data.source, params.data.target);
+    }
+  }, [showEdgeRelationDetail]);
 
   const handleChartClick = useCallback((params: any) => {
     if (contextMenu.show) return;
@@ -311,7 +366,7 @@ export default function RelationPage() {
     <View className="relation-page">
       <View className="relation-page-container">
         <View className="header">
-          <View className="pickers">
+          <View className={`header-pickers ${showSearch ? "collapsed" : ""}`}>
             <Picker mode="selector" range={relationPickerRange} value={relationFilterIndex} onChange={onFilterChange}>
               <View className="picker">关系: {RELATION_LABELS[filterKey] ?? "全部关系"}</View>
             </Picker>
@@ -319,6 +374,33 @@ export default function RelationPage() {
               <View className="picker">显示: {DISPLAY_MODE_LABELS[displayMode] ?? "显示所有"}</View>
             </Picker>
           </View>
+
+          <View className={`header-search ${showSearch ? "expanded" : ""}`}>
+            <View className={`search-bar-pill ${searchFocused ? "focused" : ""}`}>
+              <Input
+                className="search-input"
+                value={searchText}
+                placeholder="输入单词搜索..."
+                focus={showSearch}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                onInput={(e: any) => setSearchText(e.detail.value)}
+                onConfirm={handleSearchSubmit}
+              />
+              {searchText.length > 0 && (
+                <View className="search-submit" onClick={handleSearchSubmit}>
+                  <Text>搜索</Text>
+                </View>
+              )}
+              <View className="search-close" onClick={() => { setShowSearch(false); setSearchText(""); }}>
+                <Text>✕</Text>
+              </View>
+            </View>
+          </View>
+
+          {!showSearch && (
+            <View className="header-search-icon" onClick={() => setShowSearch(true)} />
+          )}
         </View>
 
         <View className="canvas-holder">
@@ -360,79 +442,83 @@ export default function RelationPage() {
 
         {showDetail && <View className="fp-backdrop" onTouchStart={hideDetails} />}
         {showDetail && (
-          <FloatingPanel key={`word-${detailNode.word}`} className="word-detail-panel" anchors={wordAnchors} height={wordAnchors[1]} onClose={hideDetails}>
-            <View className="wdp-header">
-              <View className="wdp-title-row">
-                <Text className="wdp-word">{detailNode.word}</Text>
-                <View className="wdp-meta">
-                  <Text className="wdp-pos">{detailNode.partOfSpeech}</Text>
-                  {detailNode.level ? <Text className="wdp-level">{detailNode.level}</Text> : null}
+          <FloatingPanel
+            key={`word-${detailNode.word}`}
+            className="word-detail-panel"
+            anchors={wordAnchors}
+            height={wordAnchors[1]}
+            onClose={hideDetails}
+            renderHeader={
+              <View className="cfp-header-content">
+                <View className="cfp-title-row">
+                  <Text className="cfp-word">{detailNode.word}</Text>
+                  <View className="cfp-meta">
+                    {detailNode.partOfSpeech ? (
+                      <Text className="cfp-pos">{detailNode.partOfSpeech}</Text>
+                    ) : null}
+                    {detailNode.level ? (
+                      <Text className="cfp-level">{detailNode.level}</Text>
+                    ) : null}
+                  </View>
                 </View>
+                {detailNode.phonetic ? (
+                  <Text className="cfp-phonetic">{detailNode.phonetic}</Text>
+                ) : null}
               </View>
-              {detailNode.phonetic ? <Text className="wdp-phonetic">{detailNode.phonetic}</Text> : null}
-            </View>
-            <View className="wdp-divider" />
-            <View className="wdp-definition">{detailNode.definition}</View>
-            <View className="wdp-divider" />
-            <ScrollView scrollY className="wdp-relations-scroll">
-              <Collapse value={expanded} onChange={setExpanded}>
-                {Object.keys(relation.RELATION_GROUPS).map((groupKey) => {
-                  const list = groupedRelations[groupKey];
-                  if (!list || list.length === 0) return null;
-                  return (
-                    <Collapse.Item key={groupKey} title={relation.getRelationGroupLabel(groupKey)} className="relation-group">
-                      <View className="wdp-rel-list">
-                        {list.map((rel, idx) => (
-                          <View key={idx} className="wdp-rel-item" style={{ borderLeftColor: relation.getRelationColor(rel.type) }}>
-                            <Text className="wdp-rel-type">{relation.getRelationLabel(rel.type)}</Text>
-                            <Text className="wdp-rel-word">{rel.word}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </Collapse.Item>
-                  );
-                })}
-              </Collapse>
-            </ScrollView>
-            {detailNode.examples.length > 0 && (
-              <>
-                <View className="wdp-divider" />
-                <View className="wdp-examples">
-                  <Text className="wdp-section-label">例句</Text>
-                  {detailNode.examples.map((example, index) => (
-                    <View key={index} className="wdp-example-item">
-                      <Text className="wdp-example-idx">{index + 1}.</Text>
-                      <Text className="wdp-example-text">{example}</Text>
-                    </View>
-                  ))}
-                </View>
-              </>
-            )}
+            }
+          >
+            <WordDetailPanel
+              wordData={{
+                word: detailNode.word,
+                phonetic: detailNode.phonetic,
+                partOfSpeech: detailNode.partOfSpeech,
+                level: detailNode.level,
+                definition: detailNode.definition,
+                examples: detailNode.examples,
+                relations: detailNode.relations as any[],
+                isCenter: detailNode.isCenter,
+              }}
+              groupedRelations={groupedRelations}
+              onNavigateToWord={handleNavigateToWord}
+              onPlayExample={handlePlayExample}
+            />
           </FloatingPanel>
         )}
 
         {showEdgeDetail && <View className="fp-backdrop" onTouchStart={hideDetails} />}
         {showEdgeDetail && (
-          <FloatingPanel key={`edge-${edgeDetail.word}-${edgeDetail.targetWord}`} className="relation-detail-panel" anchors={relationAnchors} height={relationAnchors[1]} onClose={hideDetails}>
-            <View className="relation-detail-header">
-              <Text className="relation-detail-title">{edgeDetail.type}</Text>
-            </View>
-            <View className="relation-detail-words">
-              <Text className="relation-detail-word">{edgeDetail.word}</Text>
-              <Text className="relation-detail-arrow">↔</Text>
-              <Text className="relation-detail-word">{edgeDetail.targetWord}</Text>
-            </View>
-            {edgeDetail.examples.length > 0 && (
-              <View className="relation-detail-examples">
-                {edgeDetail.examples.map((example, index) => (
-                  <View key={index} className="relation-detail-example-item">
-                    <Text className="list-index">{index + 1}.</Text>
-                    <Text className="list-text">{example}</Text>
-                  </View>
-                ))}
+          <FloatingPanel
+            key={`edge-${edgeDetail.word}-${edgeDetail.targetWord}`}
+            className="relation-detail-panel"
+            anchors={relationAnchors}
+            height={relationAnchors[1]}
+            onClose={hideDetails}
+            renderHeader={
+              <View className="cfp-header-content">
+                <View className="relation-detail-header">
+                  <Text className="relation-detail-title">{edgeDetail.type}</Text>
+                </View>
               </View>
-            )}
-            <View className="relation-detail-strength">关系强度: {edgeDetail.strength}</View>
+            }
+          >
+            <View className="rdp-content">
+              <View className="relation-detail-words">
+                <Text className="relation-detail-word">{edgeDetail.word}</Text>
+                <Text className="relation-detail-arrow">↔</Text>
+                <Text className="relation-detail-word">{edgeDetail.targetWord}</Text>
+              </View>
+              {edgeDetail.examples.length > 0 && (
+                <View className="relation-detail-examples">
+                  {edgeDetail.examples.map((example, index) => (
+                    <View key={index} className="relation-detail-example-item">
+                      <Text className="list-index">{index + 1}.</Text>
+                      <Text className="list-text">{example}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              <View className="relation-detail-strength">关系强度: {edgeDetail.strength}</View>
+            </View>
           </FloatingPanel>
         )}
       </View>

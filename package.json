@@ -29,7 +29,8 @@
     "dev:rn": "npm run build:rn -- --watch",
     "dev:qq": "npm run build:qq -- --watch",
     "dev:jd": "npm run build:jd -- --watch",
-    "dev:harmony-hybrid": "npm run build:harmony-hybrid -- --watch"
+    "dev:harmony-hybrid": "npm run build:harmony-hybrid -- --watch",
+    "server": "tsx server/index.ts"
   },
   "browserslist": {
     "development": [
@@ -98,6 +99,7 @@
     "stylelint": "^16.4.0",
     "stylelint-config-standard": "^38.0.0",
     "terser": "^5.30.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.5",
     "vite": "^4.2.0"
   }

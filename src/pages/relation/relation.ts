@@ -104,6 +104,67 @@ export const RELATION_GROUP_LABELS: Record<string, string> = {
   other: '其他关系',
 };
 
+export type RelationDirection = "bidirectional" | "directed" | "paired"
+
+export const RELATION_DIRECTION: Record<string, RelationDirection> = {
+  [RELATION_TYPES.SYNONYM]: "bidirectional",
+  [RELATION_TYPES.ANTONYM]: "bidirectional",
+  [RELATION_TYPES.HYPERNYM]: "paired",
+  [RELATION_TYPES.HYPONYM]: "paired",
+  [RELATION_TYPES.HOLONYM]: "paired",
+  [RELATION_TYPES.MERONYM]: "paired",
+  [RELATION_TYPES.SISTER_TERM]: "bidirectional",
+
+  [RELATION_TYPES.HOMOPHONE]: "bidirectional",
+  [RELATION_TYPES.HOMONYM]: "bidirectional",
+  [RELATION_TYPES.PARONYM]: "bidirectional",
+  [RELATION_TYPES.SIMILAR]: "bidirectional",
+  [RELATION_TYPES.DERIVATION]: "directed",
+  [RELATION_TYPES.ABBREVIATION]: "directed",
+  [RELATION_TYPES.VARIANT]: "bidirectional",
+
+  [RELATION_TYPES.BASE_FORM]: "directed",
+  [RELATION_TYPES.THIRD_PERSON]: "directed",
+  [RELATION_TYPES.PAST_TENSE]: "directed",
+  [RELATION_TYPES.PAST_PARTICIPLE]: "directed",
+  [RELATION_TYPES.PRESENT_PARTICIPLE]: "directed",
+  [RELATION_TYPES.PLURAL_FORM]: "directed",
+  [RELATION_TYPES.POSSESSIVE]: "directed",
+  [RELATION_TYPES.COMPARATIVE]: "directed",
+  [RELATION_TYPES.SUPERLATIVE]: "directed",
+  [RELATION_TYPES.TO_NOUN]: "directed",
+  [RELATION_TYPES.TO_VERB]: "directed",
+  [RELATION_TYPES.TO_ADJ]: "directed",
+  [RELATION_TYPES.TO_ADV]: "directed",
+
+  [RELATION_TYPES.COLLOCATION]: "directed",
+  [RELATION_TYPES.COMPOUND]: "directed",
+  [RELATION_TYPES.PHRASE_COMPOSITION]: "directed",
+  [RELATION_TYPES.MODIFIER_HEAD]: "directed",
+  [RELATION_TYPES.VERB_OBJECT]: "directed",
+  [RELATION_TYPES.SUBJECT_PREDICATE]: "directed",
+  [RELATION_TYPES.RELATED]: "bidirectional",
+  [RELATION_TYPES.IDIOM_COMPONENT]: "directed",
+  [RELATION_TYPES.SEMANTIC_ROLE]: "directed",
+  [RELATION_TYPES.CONTEXTUAL]: "bidirectional",
+  [RELATION_TYPES.CUSTOM]: "bidirectional",
+}
+
+export const PAIRED_RELATION: Record<string, string> = {
+  [RELATION_TYPES.HYPERNYM]: RELATION_TYPES.HYPONYM,
+  [RELATION_TYPES.HYPONYM]: RELATION_TYPES.HYPERNYM,
+  [RELATION_TYPES.HOLONYM]: RELATION_TYPES.MERONYM,
+  [RELATION_TYPES.MERONYM]: RELATION_TYPES.HOLONYM,
+}
+
+export const getRelationDirection = (relationType: string): RelationDirection => {
+  return RELATION_DIRECTION[relationType] ?? "directed"
+}
+
+export const getPairedType = (relationType: string): string => {
+  return PAIRED_RELATION[relationType] ?? relationType
+}
+
 // 关系类型中文标签
 export const RELATION_LABELS = {
   [RELATION_TYPES.SYNONYM]: "同义词",

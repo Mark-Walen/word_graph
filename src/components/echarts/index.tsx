@@ -28,7 +28,7 @@ class BaseChart extends Component<BaseChartProps, BaseChartState> {
   refresh = (data: any) => {
     if (this._chart) {
       this._chart.dispatchAction({ type: "downplay" });
-      this._chart.setOption(data, true);
+      this._chart.setOption(data);
       return;
     }
 

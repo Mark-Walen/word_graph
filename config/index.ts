@@ -23,6 +23,7 @@ export default defineConfig<'vite'>(async (merge, _opts) => {
       "@tarojs/plugin-html",
     ],
     defineConstants: {
+      'process.env.TARO_APP_API_BASE_URL': JSON.stringify(process.env.TARO_APP_API_BASE_URL || 'http://localhost:25051'),
     },
     copy: {
       patterns: [

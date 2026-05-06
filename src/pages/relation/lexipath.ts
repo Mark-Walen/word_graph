@@ -1,5 +1,7 @@
 // ===== 类型定义 =====
 
+import { getRelationDirection, getPairedType } from "./relation"
+
 export type RelationType =
   | "synonym"
   | "antonym"
@@ -32,22 +34,23 @@ export type Edge = {
 // ===== 边类型加权 =====
 
 const TYPE_WEIGHT: Record<RelationType, number> = {
-  synonym: 1.2,
+  synonym: 1.0,
   antonym: 0.8,
-  to_noun: 1.0,
-  to_adv: 1.0,
+  to_noun: 0.95,
+  to_adv: 0.95,
   comparative: 0.9,
   superlative: 0.9,
   related: 0.6,
-  present_participle: 1.0,
-  past_tense: 1.0,
+  present_participle: 0.95,
+  past_tense: 0.95,
 };
 
 function getEdgeWeight(rel: Relation): number {
-  return rel.strength * (TYPE_WEIGHT[rel.type] ?? 1.0);
+  const raw = rel.strength * (TYPE_WEIGHT[rel.type] ?? 1.0)
+  return Math.min(raw, 0.999)
 }
 
-// ===== 构建图 =====
+// ===== 构建有向图 (原始) =====
 
 export function buildGraph(data: WordGraph): Record<string, Edge[]> {
   const graph: Record<string, Edge[]> = {};
@@ -60,6 +63,49 @@ export function buildGraph(data: WordGraph): Record<string, Edge[]> {
   });
 
   return graph;
+}
+
+// ===== 构建混合方向图 (按 RELATION_DIRECTION 规则) =====
+
+export function buildSymmetricGraph(data: WordGraph): Record<string, Edge[]> {
+  const graph: Record<string, Edge[]> = {};
+
+  const ensureEdges = (word: string) => {
+    if (!graph[word]) graph[word] = [];
+  };
+
+  Object.values(data).forEach((node) => {
+    ensureEdges(node.word);
+    node.relations.forEach((rel) => {
+      graph[node.word].push({ to: rel.word, weight: getEdgeWeight(rel) });
+
+      const dir = getRelationDirection(rel.type);
+      if (dir === "bidirectional") {
+        ensureEdges(rel.word);
+        graph[rel.word].push({ to: node.word, weight: getEdgeWeight(rel) });
+      } else if (dir === "paired") {
+        const pairedType = getPairedType(rel.type);
+        ensureEdges(rel.word);
+        graph[rel.word].push({
+          to: node.word,
+          weight: getEdgeWeight({ ...rel, type: pairedType } as Relation),
+        });
+      }
+    });
+  });
+
+  return graph;
+}
+
+const _symGraphCache = new WeakMap<WordGraph, Record<string, Edge[]>>();
+
+function getSymGraph(data: WordGraph): Record<string, Edge[]> {
+  let g = _symGraphCache.get(data);
+  if (!g) {
+    g = buildSymmetricGraph(data);
+    _symGraphCache.set(data, g);
+  }
+  return g;
 }
 
 // ===== 状态定义（核心）=====
@@ -173,7 +219,7 @@ export function findBestPathWithDepth(
   return { path, score };
 }
 
-// ===== 子图提取 =====
+// ===== 子图提取 (仅路径节点) =====
 
 export function buildPathSubgraph(
   data: WordGraph,
@@ -195,30 +241,221 @@ export function buildPathSubgraph(
   return result;
 }
 
+// ===== 子图提取 (路径节点 + 直接邻居，用于可视化) =====
+
+export function buildExpandedSubgraph(
+  data: WordGraph,
+  path: string[]
+): WordGraph {
+  const result: WordGraph = {};
+  const pathSet = new Set(path);
+  const included = new Set(path);
+
+  path.forEach((word) => {
+    const node = data[word];
+    if (!node) return;
+    node.relations.forEach((r) => included.add(r.word));
+  });
+
+  included.forEach((word) => {
+    const node = data[word];
+    if (node) {
+      result[word] = {
+        ...node,
+        relations: node.relations.filter((r) => included.has(r.word)),
+      }
+    } else {
+      result[word] = { word, relations: [] }
+    }
+  });
+
+  return result;
+}
+
+// ===== BFS 最短路径 (最少步数) =====
+
+export function findShortestPath(
+  graph: Record<string, Edge[]>,
+  start: string,
+  target: string,
+  maxDepth = 5
+): { path: string[]; score: number } {
+  const visited = new Set<string>();
+  const prev: Record<string, string | null> = { [start]: null };
+  const queue: string[] = [start];
+  visited.add(start);
+
+  while (queue.length) {
+    const cur = queue.shift()!;
+    if (cur === target) break;
+
+    const edges = graph[cur];
+    if (!edges) continue;
+
+    for (const edge of edges) {
+      const next = edge.to;
+      if (visited.has(next)) continue;
+
+      // 计算当前深度 (边数 = 节点数 - 1)
+      let depth = 0;
+      let p: string | null = cur;
+      while (p && prev[p] !== null) { depth++; p = prev[p]!; }
+
+      if (depth >= maxDepth) continue;
+
+      visited.add(next);
+      prev[next] = cur;
+      queue.push(next);
+    }
+  }
+
+  if (!(target in prev)) {
+    return { path: [], score: 0 };
+  }
+
+  const path: string[] = [];
+  let cur: string | null = target;
+  while (cur) {
+    path.push(cur);
+    cur = prev[cur] ?? null;
+  }
+  path.reverse();
+
+  return { path, score: 1 / path.length };
+}
+
 // ===== 最终 API =====
+
+export type PathMode = "shortest" | "strongest"
+
+export function getAvailableHops(
+  data: WordGraph,
+  start: string,
+  target: string,
+  maxProbeDepth = 10
+): number[] {
+  const graph = getSymGraph(data)
+  const hopSet = new Set<number>()
+  for (let d = 2; d <= maxProbeDepth; d++) {
+    const best = findBestPathWithDepth(graph, start, target, d)
+    if (best.path.length > 0) hopSet.add(best.path.length - 1)
+    const short = findShortestPath(graph, start, target, d)
+    if (short.path.length > 0) hopSet.add(short.path.length - 1)
+  }
+  return Array.from(hopSet).sort((a, b) => a - b)
+}
+
+// ===== 多路径收集 =====
+
+export function findAllPathsAtDepth(
+  data: WordGraph,
+  start: string,
+  target: string,
+  depth: number,
+  maxResults = 50
+): { path: string[]; score: number }[] {
+  const graph = getSymGraph(data)
+  const results: { path: string[]; score: number }[] = []
+  const stack: { word: string; path: string[]; cost: number }[] = [
+    { word: start, path: [start], cost: 0 },
+  ]
+
+  while (stack.length && results.length < maxResults) {
+    const cur = stack.pop()!
+    const { word, path, cost } = cur
+
+    if (path.length - 1 > depth) continue
+
+    if (word === target && path.length - 1 === depth) {
+      const score = Math.exp(-cost)
+      results.push({ path: [...path], score })
+      continue
+    }
+
+    const edges = graph[word]
+    if (!edges) continue
+
+    for (const edge of edges) {
+      if (path.includes(edge.to)) continue
+      if (path.length - 1 >= depth) continue
+      const weight = Math.max(edge.weight, 1e-6)
+      stack.push({
+        word: edge.to,
+        path: [...path, edge.to],
+        cost: cost - Math.log(weight),
+      })
+    }
+  }
+
+  results.sort((a, b) => b.score - a.score)
+  return results
+}
+
+export function findAllReachablePaths(
+  data: WordGraph,
+  start: string,
+  target: string,
+  maxDepth = 10,
+  maxResults = 50
+): { path: string[]; score: number; hops: number }[] {
+  const graph = getSymGraph(data)
+  const results: { path: string[]; score: number; hops: number }[] = []
+  const visited = new Set<string>()
+
+  const dfs = (
+    word: string,
+    path: string[],
+    cost: number,
+  ) => {
+    if (results.length >= maxResults) return
+    if (path.length - 1 > maxDepth) return
+
+    if (word === target && path.length > 1) {
+      const hops = path.length - 1
+      results.push({ path: [...path], score: Math.exp(-cost), hops })
+      return
+    }
+
+    const edges = graph[word]
+    if (!edges) return
+
+    for (const edge of edges) {
+      if (path.includes(edge.to)) continue
+      const weight = Math.max(edge.weight, 1e-6)
+      dfs(edge.to, [...path, edge.to], cost - Math.log(weight))
+    }
+  }
+
+  dfs(start, [start], 0)
+
+  results.sort((a, b) => a.hops - b.hops || b.score - a.score)
+  return results.filter((r, i, arr) => {
+    const key = r.path.join("|")
+    return arr.findIndex((x) => x.path.join("|") === key) === i
+  })
+}
 
 export function getPathGraph(
   data: WordGraph,
   start: string,
   target: string,
-  options?: { maxDepth?: number }
+  options?: { maxDepth?: number; mode?: PathMode }
 ) {
-  const { maxDepth = 5 } = options || {};
+  const { maxDepth = 5, mode = "strongest" } = options || {}
 
-  const graph = buildGraph(data);
+  const graph = getSymGraph(data)
 
-  const { path, score } = findBestPathWithDepth(
-    graph,
-    start,
-    target,
-    maxDepth
-  );
+  const finder = mode === "shortest" ? findShortestPath : findBestPathWithDepth
 
-  const subgraph = buildPathSubgraph(data, path);
+  const { path, score } = finder(graph, start, target, maxDepth)
+
+  const subgraph = buildExpandedSubgraph(data, path)
 
   return {
     path,
     score,
+    hops: Math.max(0, path.length - 1),
+    intermediates: Math.max(0, path.length - 2),
     nodes: subgraph,
-  };
+  }
 }
