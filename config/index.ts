@@ -1,7 +1,29 @@
 import { defineConfig, type UserConfigExport } from '@tarojs/cli'
+import os from 'os'
 import path from 'path'
 import devConfig from './dev'
 import prodConfig from './prod'
+
+function getLanIp(): string {
+  const interfaces = os.networkInterfaces()
+  const candidates: Array<{ ip: string; score: number }> = []
+
+  for (const nets of Object.values(interfaces)) {
+    if (!nets) continue
+    for (const net of nets) {
+      if (!net || net.family !== 'IPv4' || net.internal || !net.address) continue
+      const ip = net.address
+      let score = 0
+      if (ip.startsWith('192.168.')) score = 3
+      else if (ip.startsWith('10.')) score = 2
+      else if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(ip)) score = 1
+      candidates.push({ ip, score })
+    }
+  }
+
+  candidates.sort((a, b) => b.score - a.score)
+  return candidates[0]?.ip || '127.0.0.1'
+}
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'vite'>(async (merge, _opts) => {
@@ -23,7 +45,9 @@ export default defineConfig<'vite'>(async (merge, _opts) => {
       "@tarojs/plugin-html",
     ],
     defineConstants: {
-      'process.env.TARO_APP_API_BASE_URL': JSON.stringify(process.env.TARO_APP_API_BASE_URL || 'http://localhost:25051'),
+      'process.env.TARO_APP_API_BASE_URL': JSON.stringify(
+        process.env.TARO_APP_API_BASE_URL || `http://${getLanIp()}:25051`,
+      ),
     },
     copy: {
       patterns: [
