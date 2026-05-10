@@ -127,7 +127,7 @@ export const createPlatform = ({
   },
 
   async getClippingRect() {
-    const { windowWidth, windowHeight } = Taro.getSystemInfoSync();
+    const { windowWidth, windowHeight } = Taro.getWindowInfo();
     if (debug) {
       // eslint-disable-next-line no-console
       console.log('[floating-ui-taro][platform:getClippingRect]', {

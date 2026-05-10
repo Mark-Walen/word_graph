@@ -6,6 +6,7 @@ import "./index.scss"
 import { WordDetailPanel, EChart, FloatingPanel } from "@/components"
 import NavigationBar from "@/components/navigation-bar"
 import { Select } from "@/components/select"
+import { getNavOffset } from "@/utils/get-nav-offset"
 import {
   fetchPath,
   convertApiSubgraphToWordGraph,
@@ -322,6 +323,8 @@ export default function RelationPathPage() {
   const [searchText, setSearchText] = useState("")
   const [searchFocused, setSearchFocused] = useState(false)
   const [showFilterPanel, setShowFilterPanel] = useState(false)
+  const [navOffset, setNavOffset] = useState("")
+  const [canvasHodlerMarginTop, setCanvasHolderMarginTop] = useState("")
 
   const [showDetail, setShowDetail] = useState(false)
   const [detailNode, setDetailNode] = useState<WordInfo>(emptyWordInfo())
@@ -539,6 +542,7 @@ export default function RelationPathPage() {
     if (initializedRef.current) return
     initializedRef.current = true
 
+    setNavOffset(Taro.pxTransform(getNavOffset()-8))
     const instance = Taro.getCurrentInstance()
     const params = (instance?.router?.params || {}) as any
     const raw = params.words
@@ -554,6 +558,15 @@ export default function RelationPathPage() {
       setStatus("empty")
       return
     }
+
+    const elemquery = Taro.createSelectorQuery()
+    elemquery.select('.rp-header').boundingClientRect()
+    elemquery.exec((res) => {
+      console.log(res)
+      const height = res[0].height
+      const marginTop = Taro.pxTransform(height + 8)
+      setCanvasHolderMarginTop(marginTop)
+    })
 
     sourceRef.current = query.source
     targetRef.current = query.target
@@ -780,87 +793,6 @@ export default function RelationPathPage() {
         <NavigationBar
           backgroundColor="#ffffff"
           border={true}
-          header={
-            <View className="rp-controls">
-              <View className="rp-controls-search">
-                <View className="rp-search-icon" />
-                <Input
-                  className="rp-search-input"
-                  value={searchText}
-                  placeholder={`${sourceWord || "start"} → ${targetWord || "target"}  或 'A B'`}
-                  focus={showSearch}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  onInput={(e: any) => setSearchText(e.detail.value)}
-                  onConfirm={handleSearchSubmit}
-                />
-              </View>
-
-              <View className={`rp-filter-panel ${showFilterPanel ? "expanded" : ""}`}>
-                <View className="rp-controls-filters">
-                  <View className="rp-filter-col">
-                    <Text className="rp-filter-label">语义类型</Text>
-                    <Select
-                      options={relationFilterOptions}
-                      value={filterKey}
-                      onChange={onFilterChange}
-                    />
-                  </View>
-                  <View className="rp-filter-col">
-                    <Text className="rp-filter-label">路径类型</Text>
-                    <Select
-                      options={pathModeOptions}
-                      value={pathMode}
-                      onChange={onPathModeChange}
-                    />
-                  </View>
-                </View>
-
-                <View className="rp-controls-secondary">
-                  <View className="rp-hops-row">
-                    <Text className="rp-hops-label">Hops: {pathMode === "showAll" ? showAllDepthOptions[showAllDepthIdx] : (depthOptions[depthIndex] ?? maxDepth)}</Text>
-                    <Select
-                      options={depthOptionsForSelect}
-                      value={pathMode === "showAll" ? String(showAllDepthIdx) : String(depthOptions[depthIndex] ?? maxDepth)}
-                      onChange={onDepthChange}
-                    />
-                  </View>
-                  <View className="rp-toggle-row">
-                    <Text className="rp-toggle-label">多路径</Text>
-                    <Switch checked={showAllPaths} onChange={(e: any) => setShowAllPaths(e.detail.value)} />
-                  </View>
-                </View>
-              </View>
-
-              {status === "ready" && !showAllPaths && (
-                <View className="rp-breadcrumb">
-                  <View
-                    className="rp-breadcrumb-nav"
-                    onClick={() => {
-                      if (filteredPaths.length <= 1) return
-                      const prev = (currentPathIdx - 1 + filteredPaths.length) % filteredPaths.length
-                      browseToPath(prev)
-                    }}
-                  >
-                    <Text className={`rp-breadcrumb-arrow ${filteredPaths.length > 1 ? "" : "disabled"}`}>◀</Text>
-                  </View>
-                  <Text className="rp-breadcrumb-text">{pathLabel || "当前路径"}</Text>
-                  <Text className="rp-breadcrumb-stats">{hops} hop{hops === 1 ? "" : "s"}</Text>
-                  <Text className="rp-breadcrumb-counter">{currentPathIndexLabel}</Text>
-                  <View
-                    className="rp-breadcrumb-nav"
-                    onClick={() => {
-                      if (filteredPaths.length <= 1) return
-                      const next = (currentPathIdx + 1) % filteredPaths.length
-                      browseToPath(next)
-                    }}
-                  >
-                    <Text className={`rp-breadcrumb-arrow ${filteredPaths.length > 1 ? "" : "disabled"}`}>▶</Text>
-                  </View>
-                </View>
-              )}
-            </View>
-          }
         >
           <View className="rp-nav-content">
             <View className="rp-nav-left">
@@ -878,15 +810,95 @@ export default function RelationPathPage() {
           </View>
         </NavigationBar>
 
-        {status === "ready" && showAllPaths && (
-          <View className="rp-path-breadcrumb">
-            <Text className="rp-path-text">
-              全部路径 ({currentPathCount} 条){pathMode === "showAll" && showAllDepthIdx > 0 ? ` · ${showAllDepthOptions[showAllDepthIdx]}` : ""}
-            </Text>
+        <View className="rp-header" style={{ "top": `${navOffset}` }}>
+          <View className="rp-header-search">
+            <View className="rp-search-icon" />
+            <Input
+              className="rp-search-input"
+              value={searchText}
+              placeholder={`${sourceWord || "start"} → ${targetWord || "target"}  或 'A B'`}
+              focus={showSearch}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              onInput={(e: any) => setSearchText(e.detail.value)}
+              onConfirm={handleSearchSubmit}
+            />
           </View>
-        )}
 
-        <View className="canvas-holder">
+          <View className={`rp-filter-panel ${showFilterPanel ? "expanded" : ""}`}>
+            <View className="rp-controls-filters">
+              <View className="rp-filter-col">
+                <Text className="rp-filter-label">语义类型</Text>
+                <Select
+                  options={relationFilterOptions}
+                  value={filterKey}
+                  onChange={onFilterChange}
+                />
+              </View>
+              <View className="rp-filter-col">
+                <Text className="rp-filter-label">路径类型</Text>
+                <Select
+                  options={pathModeOptions}
+                  value={pathMode}
+                  onChange={onPathModeChange}
+                />
+              </View>
+            </View>
+
+            <View className="rp-controls-secondary">
+              <View className="rp-hops-row">
+                <Text className="rp-hops-label">Hops: {pathMode === "showAll" ? showAllDepthOptions[showAllDepthIdx] : (depthOptions[depthIndex] ?? maxDepth)}</Text>
+                <Select
+                  options={depthOptionsForSelect}
+                  value={pathMode === "showAll" ? String(showAllDepthIdx) : String(depthOptions[depthIndex] ?? maxDepth)}
+                  onChange={onDepthChange}
+                />
+              </View>
+              <View className="rp-toggle-row">
+                <Text className="rp-toggle-label">多路径</Text>
+                <Switch color="#007AFF" checked={showAllPaths} onChange={(e: any) => setShowAllPaths(e.detail.value)} />
+              </View>
+            </View>
+          </View>
+
+          {status === "ready" && !showAllPaths && (
+            <View className="rp-breadcrumb">
+              <View
+                className="rp-breadcrumb-nav"
+                onClick={() => {
+                  if (filteredPaths.length <= 1) return
+                  const prev = (currentPathIdx - 1 + filteredPaths.length) % filteredPaths.length
+                  browseToPath(prev)
+                }}
+              >
+                <Text className={`rp-breadcrumb-arrow ${filteredPaths.length > 1 ? "" : "disabled"}`}>◀</Text>
+              </View>
+              <Text className="rp-breadcrumb-text">{pathLabel || "当前路径"}</Text>
+              <Text className="rp-breadcrumb-stats">{hops} hop{hops === 1 ? "" : "s"}</Text>
+              <Text className="rp-breadcrumb-counter">{currentPathIndexLabel}</Text>
+              <View
+                className="rp-breadcrumb-nav"
+                onClick={() => {
+                  if (filteredPaths.length <= 1) return
+                  const next = (currentPathIdx + 1) % filteredPaths.length
+                  browseToPath(next)
+                }}
+              >
+                <Text className={`rp-breadcrumb-arrow ${filteredPaths.length > 1 ? "" : "disabled"}`}>▶</Text>
+              </View>
+            </View>
+          )}
+
+          {status === "ready" && showAllPaths && (
+            <View className="rp-path-breadcrumb">
+              <Text className="rp-path-text">
+                全部路径 ({currentPathCount} 条){pathMode === "showAll" && showAllDepthIdx > 0 ? ` · ${showAllDepthOptions[showAllDepthIdx]}` : ""}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View className="canvas-holder" style={{ "marginTop": `${canvasHodlerMarginTop}`}}>
           {status === "loading" && (
             <View className="rp-loading">
               <Text>计算路径中…</Text>

@@ -104,7 +104,7 @@ class EcCanvasTaro extends Component<EcCanvasProps, EcCanvasState> {
       .exec((res) => {
         const canvasNode = res[0].node;
         this.canvasNode = canvasNode;
-        const canvasDpr = Taro.getSystemInfoSync().pixelRatio;
+        const canvasDpr = Taro.getWindowInfo().pixelRatio;
         const canvasWidth = res[0].width;
         const canvasHeight = res[0].height;
         const ctx = canvasNode.getContext("2d");

@@ -7,6 +7,7 @@ import { WordDetailPanel, EChart, FloatingPanel } from "@/components";
 import NavigationBar from "@/components/navigation-bar";
 import { fetchSubgraph, convertApiSubgraphToWordGraph } from "./graph-api";
 import { Select } from "@/components/select";
+import { getNavOffset } from "@/utils/get-nav-offset";
 
 const RELATION_LABELS: Record<string, string> = {
   all: "全部关系",
@@ -196,7 +197,8 @@ export default function RelationPage() {
     () => DISPLAY_MODE_KEYS.map((k) => ({ label: DISPLAY_MODE_LABELS[k], value: k })),
     [],
   )
-
+  const [navOffset, setNavOffset] = useState("")
+  const [canvasHodlerMarginTop, setCanvasHolderMarginTop] = useState("")
   const [showDetail, setShowDetail] = useState(false);
   const [detailNode, setDetailNode] = useState<WordInfo>(emptyWordInfo());
   const [groupedRelations, setGroupedRelations] = useState<Record<string, Array<{ word: string; type: string; strength: number }>>>({});
@@ -220,7 +222,15 @@ export default function RelationPage() {
     const rawWord = decodeURIComponent(String(params.word || route.word));
     const mode = params.mode || "singleRelation";
     paramsRef.current = { word: rawWord, mode };
+    setNavOffset(Taro.pxTransform(getNavOffset()-8));
     setNavTitle(`${mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${rawWord}`);
+    const elemquery = Taro.createSelectorQuery()
+      elemquery.select('.rp-header').boundingClientRect()
+      elemquery.exec((res) => {
+        const height = res[0].height
+        const marginTop = Taro.pxTransform(height + 8)
+        setCanvasHolderMarginTop(marginTop)
+    })
     if (rawWord !== centerWord) setCenterWord(rawWord);
 
     fetchSubgraph(rawWord, 1)
@@ -376,44 +386,6 @@ export default function RelationPage() {
         <NavigationBar
           backgroundColor="#ffffff"
           border={true}
-          header={
-            <View className="rp-controls">
-              <View className="rp-controls-search">
-                <View className="rp-search-icon" />
-                <Input
-                  className="rp-search-input"
-                  value={searchText}
-                  placeholder="输入单词搜索..."
-                  focus={showSearch}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  onInput={(e: any) => setSearchText(e.detail.value)}
-                  onConfirm={handleSearchSubmit}
-                />
-              </View>
-
-              <View className={`rp-filter-panel ${showFilterPanel ? "expanded" : ""}`}>
-                <View className="rp-controls-filters">
-                  <View className="rp-filter-col">
-                    <Text className="rp-filter-label">关系类型</Text>
-                    <Select
-                      options={relationFilterOptions}
-                      value={filterKey}
-                      onChange={onFilterChange}
-                    />
-                  </View>
-                  <View className="rp-filter-col">
-                    <Text className="rp-filter-label">显示模式</Text>
-                    <Select
-                      options={displayModeOptions}
-                      value={displayMode}
-                      onChange={onDisplayModeChange}
-                    />
-                  </View>
-                </View>
-              </View>
-            </View>
-          }
         >
           <View className="rp-nav-content">
             <View className="rp-nav-left">
@@ -431,7 +403,44 @@ export default function RelationPage() {
           </View>
         </NavigationBar>
 
-        <View className="canvas-holder">
+        <View className="rp-header" style={{ "top": `${navOffset}`}}>
+          <View className="rp-header-search">
+            <View className="rp-search-icon" />
+            <Input
+              className="rp-search-input"
+              value={searchText}
+              placeholder="输入单词搜索..."
+              focus={showSearch}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              onInput={(e: any) => setSearchText(e.detail.value)}
+              onConfirm={handleSearchSubmit}
+            />
+          </View>
+
+          <View className={`rp-filter-panel ${showFilterPanel ? "expanded" : ""}`}>
+            <View className="rp-controls-filters">
+              <View className="rp-filter-col">
+                <Text className="rp-filter-label">关系类型</Text>
+                <Select
+                  options={relationFilterOptions}
+                  value={filterKey}
+                  onChange={onFilterChange}
+                />
+              </View>
+              <View className="rp-filter-col">
+                <Text className="rp-filter-label">显示模式</Text>
+                <Select
+                  options={displayModeOptions}
+                  value={displayMode}
+                  onChange={onDisplayModeChange}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View className="canvas-holder" style={{"marginTop": `${canvasHodlerMarginTop}`}}>
           <EChart
             ref={refChart}
             canvasId="relation-graph"

@@ -22,7 +22,7 @@ export default function Index () {
   const isH5 = process.env.TARO_ENV === 'h5' || Taro.getEnv?.() === 'WEB'
 
   useEffect(() => {
-    const systemInfo = Taro.getSystemInfoSync()
+    const systemInfo = Taro.getWindowInfo()
     const safeInset = isH5 ? 0 : Math.max(systemInfo.screenHeight - (systemInfo.safeArea?.bottom ?? systemInfo.screenHeight), 24)
     setBottomInset(safeInset)
   })

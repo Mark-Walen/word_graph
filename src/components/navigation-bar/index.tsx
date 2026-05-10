@@ -1,6 +1,7 @@
 import { View, NativeSlot } from "@tarojs/components"
 import Taro from "@tarojs/taro"
 import { useEffect, useState } from "react"
+import { getNavOffset } from "@/utils/get-nav-offset"
 
 interface Props {
   children?: React.ReactNode
@@ -14,7 +15,7 @@ export default function NavigationBar({ children, header, backgroundColor = "#ff
   const [menuButtonInfo, setMenuButtonInfo] = useState<Taro.getMenuButtonBoundingClientRect.Rect>()
 
   useEffect(() => {
-    const systemInfo = Taro.getSystemInfoSync()
+    const systemInfo = Taro.getWindowInfo()
     const menuButton = Taro.getMenuButtonBoundingClientRect()
 
     setStatusBarHeight(systemInfo.statusBarHeight || 20)
@@ -24,6 +25,8 @@ export default function NavigationBar({ children, header, backgroundColor = "#ff
   const navBarHeight = Math.max(menuButtonInfo
     ? (menuButtonInfo.top - statusBarHeight) * 2 + menuButtonInfo.height
     : 44)
+
+  getNavOffset()
 
   return (
     <View
