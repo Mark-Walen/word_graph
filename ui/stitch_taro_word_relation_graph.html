@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "on-secondary-fixed": "#0c006a",
+                  "primary": "#0058bc",
+                  "inverse-primary": "#adc6ff",
+                  "surface-container-high": "#e9e7ed",
+                  "on-secondary-fixed-variant": "#3631b4",
+                  "inverse-on-surface": "#f1f0f5",
+                  "on-primary-container": "#fefcff",
+                  "on-primary-fixed": "#001a41",
+                  "primary-fixed": "#d8e2ff",
+                  "inverse-surface": "#2f3034",
+                  "on-tertiary": "#ffffff",
+                  "secondary-fixed": "#e2dfff",
+                  "tertiary": "#9e3d00",
+                  "surface-container-low": "#f4f3f8",
+                  "surface-container-lowest": "#ffffff",
+                  "on-primary-fixed-variant": "#004493",
+                  "surface-dim": "#dad9df",
+                  "on-surface": "#1a1b1f",
+                  "surface": "#faf9fe",
+                  "on-tertiary-fixed-variant": "#7c2e00",
+                  "on-primary": "#ffffff",
+                  "primary-container": "#0070eb",
+                  "on-secondary": "#ffffff",
+                  "secondary": "#4c4aca",
+                  "outline-variant": "#c1c6d7",
+                  "outline": "#717786",
+                  "background": "#faf9fe",
+                  "on-background": "#1a1b1f",
+                  "surface-variant": "#e3e2e7",
+                  "tertiary-container": "#c64f00",
+                  "on-surface-variant": "#414755",
+                  "secondary-container": "#6664e4",
+                  "surface-container-highest": "#e3e2e7",
+                  "on-error-container": "#93000a",
+                  "on-tertiary-fixed": "#351000",
+                  "secondary-fixed-dim": "#c2c1ff",
+                  "on-secondary-container": "#fffbff",
+                  "on-tertiary-container": "#fffbff",
+                  "error-container": "#ffdad6",
+                  "surface-container": "#eeedf3",
+                  "surface-bright": "#faf9fe",
+                  "on-error": "#ffffff",
+                  "error": "#ba1a1a",
+                  "tertiary-fixed": "#ffdbcc",
+                  "surface-tint": "#005bc1",
+                  "primary-fixed-dim": "#adc6ff",
+                  "tertiary-fixed-dim": "#ffb595"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "stack-sm": "8px",
+                  "margin-main": "16px",
+                  "gutter": "12px",
+                  "safe-area-inset": "constant(safe-area-inset-bottom)",
+                  "unit": "4px",
+                  "stack-lg": "24px",
+                  "stack-md": "16px"
+          },
+          "fontFamily": {
+                  "body": ["Inter"],
+                  "caption-sm": ["Inter"],
+                  "large-title": ["Inter"],
+                  "nav-title": ["Inter"],
+                  "callout": ["Inter"],
+                  "headline": ["Inter"],
+                  "footnote": ["Inter"],
+                  "subheadline": ["Inter"]
+          },
+          "fontSize": {
+                  "body": ["17px", {"lineHeight": "22px", "letterSpacing": "-0.41px", "fontWeight": "400"}],
+                  "caption-sm": ["11px", {"lineHeight": "13px", "letterSpacing": "0.06px", "fontWeight": "400"}],
+                  "large-title": ["34px", {"lineHeight": "41px", "letterSpacing": "0.37px", "fontWeight": "700"}],
+                  "nav-title": ["17px", {"lineHeight": "22px", "letterSpacing": "-0.41px", "fontWeight": "600"}],
+                  "callout": ["16px", {"lineHeight": "21px", "letterSpacing": "-0.32px", "fontWeight": "400"}],
+                  "headline": ["17px", {"lineHeight": "22px", "letterSpacing": "-0.41px", "fontWeight": "600"}],
+                  "footnote": ["13px", {"lineHeight": "18px", "letterSpacing": "-0.08px", "fontWeight": "400"}],
+                  "subheadline": ["15px", {"lineHeight": "20px", "letterSpacing": "-0.24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .graph-bg {
+      background-image: radial-gradient(circle at 2px 2px, #e5e5ea 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+    .blur-glass {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="bg-background font-body text-on-background selection:bg-primary/20">
+<!-- TopNavBar (Large Type) -->
+<header class="sticky top-0 z-50 flex flex-col w-full px-margin-main py-stack-sm bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center justify-between h-14">
+<div class="flex items-center gap-gutter">
+<h1 class="font-large-title text-nav-title font-bold text-on-surface">LexiGraph</h1>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="material-symbols-outlined text-primary hover:bg-surface-variant/50 p-2 rounded-full transition-colors duration-200 active:opacity-70" data-icon="filter_list">filter_list</button>
+<button class="material-symbols-outlined text-primary hover:bg-surface-variant/50 p-2 rounded-full transition-colors duration-200 active:opacity-70" data-icon="history">history</button>
+<button class="material-symbols-outlined text-primary hover:bg-surface-variant/50 p-2 rounded-full transition-colors duration-200 active:opacity-70" data-icon="settings">settings</button>
+</div>
+</div>
+</header>
+<main class="flex flex-col min-h-screen">
+<!-- iOS Persistent Header Controls -->
+<div class="bg-surface/90 border-b border-outline-variant px-margin-main py-stack-md space-y-stack-md">
+<!-- Search Bar -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline" data-icon="search">search</span>
+<input class="w-full h-10 pl-10 pr-4 bg-surface-container-low border-none rounded-lg font-body focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search for words..." type="text"/>
+</div>
+<!-- Filters Row -->
+<div class="flex flex-wrap items-center gap-stack-sm">
+<div class="flex-1 min-w-[140px]">
+<label class="font-caption-sm text-on-surface-variant block mb-1">Semantic Type</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg font-subheadline h-9 py-0">
+<option>Synonym</option>
+<option>Antonym</option>
+<option>Hypernym</option>
+</select>
+</div>
+<div class="flex-1 min-w-[140px]">
+<label class="font-caption-sm text-on-surface-variant block mb-1">Path Type</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg font-subheadline h-9 py-0">
+<option>Strongest</option>
+<option>Shortest</option>
+<option>All Paths</option>
+</select>
+</div>
+</div>
+<!-- Secondary Row: Hops & Toggle -->
+<div class="flex items-center justify-between gap-stack-lg">
+<div class="flex-1 flex items-center gap-stack-md">
+<span class="font-caption-sm text-on-surface-variant whitespace-nowrap">Hops: 3</span>
+<input class="w-full h-1 bg-surface-container-highest rounded-full appearance-none accent-primary cursor-pointer" max="5" min="1" type="range" value="3"/>
+</div>
+<div class="flex items-center gap-stack-sm">
+<span class="font-subheadline text-on-surface-variant">Multiple Paths</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</div>
+</div>
+<!-- Breadcrumb Slider -->
+<div class="overflow-x-auto no-scrollbar pt-stack-sm border-t border-outline-variant/30">
+<div class="flex items-center gap-2 whitespace-nowrap text-subheadline text-on-surface-variant">
+<button class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-variant transition-colors">Apple</button>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="chevron_right">chevron_right</span>
+<button class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-variant transition-colors">Fruit</button>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="chevron_right">chevron_right</span>
+<button class="px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold">Tree</button>
+<span class="material-symbols-outlined text-outline text-[16px]" data-icon="chevron_right">chevron_right</span>
+<button class="px-3 py-1 rounded-full bg-surface-container-low hover:bg-surface-variant transition-colors text-outline">Sapling</button>
+</div>
+</div>
+</div>
+<!-- Main Content Area: Word Relationship Graph -->
+<section class="relative flex-1 graph-bg overflow-hidden min-h-[500px]">
+<!-- SVG Lines Representation -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40">
+<line stroke="#E5E5EA" stroke-width="2" x1="50%" x2="30%" y1="50%" y2="30%"></line>
+<line stroke="#E5E5EA" stroke-width="2" x1="50%" x2="70%" y1="50%" y2="35%"></line>
+<line stroke="#E5E5EA" stroke-width="2" x1="50%" x2="45%" y1="50%" y2="70%"></line>
+<line stroke="#0058bc" stroke-width="2" x1="50%" x2="65%" y1="50%" y2="60%"></line>
+<line stroke="#0058bc" stroke-dasharray="4" stroke-width="2" x1="65%" x2="80%" y1="60%" y2="75%"></line>
+</svg>
+<!-- Nodes -->
+<div class="absolute inset-0 flex items-center justify-center p-margin-main">
+<!-- Center Primary Node -->
+<div class="z-10 group cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95">
+<div class="bg-primary text-white px-8 py-4 rounded-xl shadow-lg ring-4 ring-primary/20 text-center">
+<p class="font-headline text-body font-bold">Arboreal</p>
+<p class="text-[10px] opacity-80 uppercase tracking-widest mt-1">Core Concept</p>
+</div>
+</div>
+<!-- Satellite Nodes -->
+<div class="absolute top-[30%] left-[30%] bg-white border border-outline-variant px-4 py-2 rounded-lg shadow-sm font-subheadline text-on-surface hover:shadow-md transition-shadow cursor-pointer">
+          Woodland
+        </div>
+<div class="absolute top-[35%] right-[25%] bg-white border border-outline-variant px-4 py-2 rounded-lg shadow-sm font-subheadline text-on-surface hover:shadow-md transition-shadow cursor-pointer">
+          Sylvan
+        </div>
+<div class="absolute bottom-[30%] left-[45%] bg-white border border-outline-variant px-4 py-2 rounded-lg shadow-sm font-subheadline text-on-surface hover:shadow-md transition-shadow cursor-pointer">
+          Forested
+        </div>
+<div class="absolute bottom-[35%] right-[30%] bg-surface-container-low border-2 border-primary/40 px-5 py-3 rounded-xl shadow-md font-headline text-primary cursor-pointer">
+          Dendroid
+          <span class="block text-[9px] text-on-surface-variant font-normal">92% Match</span>
+</div>
+<div class="absolute bottom-[20%] right-[15%] bg-white border border-outline-variant/50 px-4 py-2 rounded-lg shadow-sm font-subheadline text-on-surface-variant/70 opacity-60 cursor-pointer italic">
+          Timber
+        </div>
+</div>
+<!-- Interaction Overlay: Word Detail Panel -->
+<aside class="absolute bottom-8 right-margin-main w-72 blur-glass bg-white/70 border border-white/50 rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+<div class="p-4 space-y-3">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="font-headline text-primary">Dendroid</h2>
+<p class="font-footnote text-on-surface-variant italic">Adjective</p>
+</div>
+<button class="material-symbols-outlined text-outline" data-icon="close">close</button>
+</div>
+<p class="font-subheadline text-on-surface leading-tight">
+            Resembling or having the form of a tree; arborescent.
+          </p>
+<div class="pt-2 flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-secondary-container/10 text-secondary text-[11px] rounded-full font-semibold">Botany</span>
+<span class="px-2 py-0.5 bg-tertiary-container/10 text-tertiary text-[11px] rounded-full font-semibold">Morphology</span>
+</div>
+<button class="w-full py-2 bg-primary text-white rounded-lg font-headline text-[14px] active:opacity-80 transition-opacity">
+            Deep Explore
+          </button>
+</div>
+<div class="bg-primary/5 h-16 w-full relative">
+<img class="w-full h-full object-cover mix-blend-overlay grayscale opacity-40" data-alt="A lush, dense forest scene captured from a low angle looking up at the towering, ancient tree trunks. The lighting is ethereal and soft, filtering through green leaves to create a serene, intellectual atmosphere. The overall style is modern and clean, consistent with a high-end educational tool for linguistics and word analysis." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbGnft-z5e1X_aSY5FOEWKoFzC3hHsdHiVH5zFtUlxYPfeD6Jg7qaNGYi0VU-Xt_dGdqbHjHKMlCl7YfravK5jhUYwdtpPsgH0XgVD43gPQRRC2U4xEZmG_5dt3ZndOiW96-CEU1-5uWPpCUTCTMikZoFHwinJKdklaf0sJZhWoKGpfOdDHKKfY2AnnZNmugpxh0dLIyCye8c50QAwftMH-8vs7PPNjey7j-ODI2et6Fz4GMRc9ziUu3H9DKu_DU0P5wnf6Y1ADBT2"/>
+</div>
+</aside>
+<!-- Legend Overlay -->
+<div class="absolute top-4 left-margin-main flex flex-col gap-2">
+<div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-outline-variant shadow-sm">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="font-caption-sm text-on-surface">Synonym</span>
+</div>
+<div class="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-outline-variant shadow-sm">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="font-caption-sm text-on-surface">Antonym</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe-area-inset h-16 bg-surface/80 backdrop-blur-md border-t border-outline-variant">
+<a class="flex flex-col items-center justify-center text-primary transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+<span class="font-caption-sm text-caption-sm">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="manage_search">manage_search</span>
+<span class="font-caption-sm text-caption-sm">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+<span class="font-caption-sm text-caption-sm">Favorites</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-caption-sm text-caption-sm">Linguistics</span>
+</a>
+</nav>
+<!-- Navigation Spacing (Bottom) -->
+<div class="h-16"></div>
+</body></html>

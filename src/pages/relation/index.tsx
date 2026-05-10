@@ -1,10 +1,12 @@
-import { View, Text, Picker, Input } from "@tarojs/components";
+import { View, Text, Input, Switch } from "@tarojs/components";
 import Taro, { useDidShow } from "@tarojs/taro";
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import * as relation from "./relation";
 import "./index.scss";
 import { WordDetailPanel, EChart, FloatingPanel } from "@/components";
+import NavigationBar from "@/components/navigation-bar";
 import { fetchSubgraph, convertApiSubgraphToWordGraph } from "./graph-api";
+import { Select } from "@/components/select";
 
 const RELATION_LABELS: Record<string, string> = {
   all: "全部关系",
@@ -161,6 +163,7 @@ export default function RelationPage() {
   const route = useMemo(() => resolveRouteWord(), []);
   const paramsRef = useRef(route);
   const [centerWord, setCenterWord] = useState(route.word);
+  const [navTitle, setNavTitle] = useState("")
 
   const [wordGraph, setWordGraph] = useState<Record<string, any>>({});
 
@@ -170,6 +173,7 @@ export default function RelationPage() {
   const [displayMode, setDisplayMode] = useState<string>("all");
   const [starredWords, setStarredWords] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const visibleTypes = useMemo(() => computeVisibleTypes(filterKey, displayMode), [filterKey, displayMode]);
@@ -180,10 +184,18 @@ export default function RelationPage() {
     return { availableGroupKeys: result.availableGroupKeys, chartOption: result.option };
   }, [wordGraph, centerWord, visibleTypes, filterKey, removedNodeIds]);
 
-  const relationPickerKeys = useMemo(() => ["all", ...availableGroupKeys] as string[], [availableGroupKeys]);
-  const relationPickerRange = useMemo(() => ["全部关系", ...availableGroupKeys.map((k) => (RELATION_LABELS as any)[k] || k)], [availableGroupKeys]);
-  const relationFilterIndex = useMemo(() => Math.max(0, relationPickerKeys.indexOf(filterKey)), [relationPickerKeys, filterKey]);
-  const displayModeIndex = useMemo(() => Math.max(0, DISPLAY_MODE_KEYS.indexOf(displayMode as any)), [displayMode]);
+  const relationFilterOptions = useMemo(
+    () => [
+      { label: "全部关系", value: "all" },
+      ...availableGroupKeys.map((k) => ({ label: (RELATION_LABELS as any)[k] || k, value: k })),
+    ],
+    [availableGroupKeys],
+  )
+
+  const displayModeOptions = useMemo(
+    () => DISPLAY_MODE_KEYS.map((k) => ({ label: DISPLAY_MODE_LABELS[k], value: k })),
+    [],
+  )
 
   const [showDetail, setShowDetail] = useState(false);
   const [detailNode, setDetailNode] = useState<WordInfo>(emptyWordInfo());
@@ -208,7 +220,7 @@ export default function RelationPage() {
     const rawWord = decodeURIComponent(String(params.word || route.word));
     const mode = params.mode || "singleRelation";
     paramsRef.current = { word: rawWord, mode };
-    Taro.setNavigationBarTitle({ title: `${mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${rawWord}` });
+    setNavTitle(`${mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${rawWord}`);
     if (rawWord !== centerWord) setCenterWord(rawWord);
 
     fetchSubgraph(rawWord, 1)
@@ -218,13 +230,13 @@ export default function RelationPage() {
       .catch(() => {});
   });
 
-  const onFilterChange = useCallback((e: any) => {
-    const key = relationPickerKeys[e.detail.value];
+  const onFilterChange = useCallback((value: string | string[]) => {
+    const key = String(value)
     if (key) setFilterKey(key);
-  }, [relationPickerKeys]);
+  }, []);
 
-  const onDisplayModeChange = useCallback((e: any) => {
-    setDisplayMode(DISPLAY_MODE_KEYS[e.detail.value]);
+  const onDisplayModeChange = useCallback((value: string | string[]) => {
+    setDisplayMode(String(value));
   }, []);
 
   const showNodeDetail = useCallback((nodeId: string) => {
@@ -276,9 +288,7 @@ export default function RelationPage() {
     if (!entry || word === centerWord) return;
     loadWordGraph(word);
     hideDetails();
-    Taro.setNavigationBarTitle({
-      title: `${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${word}`,
-    });
+    setNavTitle(`${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${word}`);
   }, [centerWord, hideDetails, wordGraph, loadWordGraph]);
 
   const handlePlayExample = useCallback(async (_text: string) => {
@@ -298,9 +308,7 @@ export default function RelationPage() {
     setShowSearch(false);
     setSearchText("");
     hideDetails();
-    Taro.setNavigationBarTitle({
-      title: `${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${word}`,
-    });
+    setNavTitle(`${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${word}`);
   }, [searchText, hideDetails, wordGraph, loadWordGraph]);
 
   const handleContextMenuAction = useCallback((action: string) => {
@@ -319,7 +327,7 @@ export default function RelationPage() {
       if (!entry || nodeId === centerWord) return;
       setCenterWord(nodeId);
       hideDetails();
-      Taro.setNavigationBarTitle({ title: `${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${nodeId}` });
+      setNavTitle(`${paramsRef.current.mode === "twoWordsRelation" ? "两词关系" : "单词关系"} · ${nodeId}`);
     } else if (action === "remove") {
       setRemovedNodeIds((prev) => {
         const next = new Set(prev);
@@ -365,43 +373,63 @@ export default function RelationPage() {
   return (
     <View className="relation-page">
       <View className="relation-page-container">
-        <View className="header">
-          <View className={`header-pickers ${showSearch ? "collapsed" : ""}`}>
-            <Picker mode="selector" range={relationPickerRange} value={relationFilterIndex} onChange={onFilterChange}>
-              <View className="picker">关系: {RELATION_LABELS[filterKey] ?? "全部关系"}</View>
-            </Picker>
-            <Picker mode="selector" range={DISPLAY_MODE_KEYS.map((k) => DISPLAY_MODE_LABELS[k])} value={displayModeIndex} onChange={onDisplayModeChange}>
-              <View className="picker">显示: {DISPLAY_MODE_LABELS[displayMode] ?? "显示所有"}</View>
-            </Picker>
-          </View>
+        <NavigationBar
+          backgroundColor="#ffffff"
+          border={true}
+          header={
+            <View className="rp-controls">
+              <View className="rp-controls-search">
+                <View className="rp-search-icon" />
+                <Input
+                  className="rp-search-input"
+                  value={searchText}
+                  placeholder="输入单词搜索..."
+                  focus={showSearch}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  onInput={(e: any) => setSearchText(e.detail.value)}
+                  onConfirm={handleSearchSubmit}
+                />
+              </View>
 
-          <View className={`header-search ${showSearch ? "expanded" : ""}`}>
-            <View className={`search-bar-pill ${searchFocused ? "focused" : ""}`}>
-              <Input
-                className="search-input"
-                value={searchText}
-                placeholder="输入单词搜索..."
-                focus={showSearch}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                onInput={(e: any) => setSearchText(e.detail.value)}
-                onConfirm={handleSearchSubmit}
-              />
-              {searchText.length > 0 && (
-                <View className="search-submit" onClick={handleSearchSubmit}>
-                  <Text>搜索</Text>
+              <View className={`rp-filter-panel ${showFilterPanel ? "expanded" : ""}`}>
+                <View className="rp-controls-filters">
+                  <View className="rp-filter-col">
+                    <Text className="rp-filter-label">关系类型</Text>
+                    <Select
+                      options={relationFilterOptions}
+                      value={filterKey}
+                      onChange={onFilterChange}
+                    />
+                  </View>
+                  <View className="rp-filter-col">
+                    <Text className="rp-filter-label">显示模式</Text>
+                    <Select
+                      options={displayModeOptions}
+                      value={displayMode}
+                      onChange={onDisplayModeChange}
+                    />
+                  </View>
                 </View>
-              )}
-              <View className="search-close" onClick={() => { setShowSearch(false); setSearchText(""); }}>
-                <Text>✕</Text>
               </View>
             </View>
+          }
+        >
+          <View className="rp-nav-content">
+            <View className="rp-nav-left">
+              <View className="rp-back-btn" onClick={() => Taro.navigateBack()}>
+                <View className="rp-back-btn-icon" />
+              </View>
+              <View
+                className={`rp-filter-btn ${showFilterPanel ? "active" : ""}`}
+                onClick={() => setShowFilterPanel((prev) => !prev)}
+              >
+                <View className="rp-filter-btn-icon" />
+              </View>
+            </View>
+            <Text className="rp-nav-title">{navTitle}</Text>
           </View>
-
-          {!showSearch && (
-            <View className="header-search-icon" onClick={() => setShowSearch(true)} />
-          )}
-        </View>
+        </NavigationBar>
 
         <View className="canvas-holder">
           <EChart

@@ -15,6 +15,7 @@ interface BaseChartProps {
   onMouseup?: (params: unknown) => void;
   onMousemove?: (params: unknown) => void;
   onMousedown?: (params: unknown) => void;
+  onGraphroam?: (params: unknown) => void;
 }
 
 class BaseChart extends Component<BaseChartProps, BaseChartState> {
@@ -84,6 +85,12 @@ class BaseChart extends Component<BaseChartProps, BaseChartState> {
         }
       });
 
+      chart.on("graphroam", (params: unknown) => {
+        if (typeof this.props.onGraphroam === "function") {
+          this.props.onGraphroam(params);
+        }
+      });
+
       return chart;
     });
   };
@@ -94,6 +101,11 @@ class BaseChart extends Component<BaseChartProps, BaseChartState> {
     if (this._chart) {
       this._chart.dispatchAction({ type: "downplay" });
     }
+  };
+
+  getChartOption = () => {
+    if (!this._chart) return null;
+    return this._chart.getOption();
   };
 
   render() {

@@ -4,11 +4,12 @@ import { useEffect, useState } from "react"
 
 interface Props {
   children?: React.ReactNode
+  header?: React.ReactNode
   backgroundColor?: string
   border?: boolean
 }
 
-export default function NavigationBar({ children, backgroundColor = "#fff", border = true }: Props) {
+export default function NavigationBar({ children, header, backgroundColor = "#fff", border = true }: Props) {
   const [statusBarHeight, setStatusBarHeight] = useState(20)
   const [menuButtonInfo, setMenuButtonInfo] = useState<Taro.getMenuButtonBoundingClientRect.Rect>()
 
@@ -29,7 +30,7 @@ export default function NavigationBar({ children, backgroundColor = "#fff", bord
       className="nav-wrapper"
       style={{
         paddingTop: `${statusBarHeight}px`,
-        backgroundColor,
+        backgroundColor: backgroundColor,
         borderBottom: border ? "1px solid rgba(0,0,0,0.05)" : "none",
         position: "sticky",
         top: 0,
@@ -49,6 +50,7 @@ export default function NavigationBar({ children, backgroundColor = "#fff", bord
         {/* Slot or children */}
         {children || <NativeSlot />}
       </View>
+      {header}
     </View>
   )
 }
